@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>action列表</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <link rel="stylesheet" type="text/css" href="../../static/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="../../static/css/bootstrap.min.css" >
+    <link rel="stylesheet" type="text/css" href="../../static/css/bootstrap-table.min.css" >
+</head>
+
+<body>
+
+<div >
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title text-center">action列表</h3>
+        </div>
+        <div class="panel-body">
+            <table id="data_table" ></table>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script type="text/javascript" src="../../static/js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="./../static/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./../static/js/bootstrap-table.js"></script>
+<script type="text/javascript" src="./../static/js/bootstrap-table-zh-CN.js"></script>
+<script type="text/javascript" src="../../static/js/pagination.js"></script>
+<script type="text/javascript" src="../../static/js/select2.js"></script>
+<script type="text/javascript" src="../../static/js/dateUtil.js"></script>
+<script type="text/javascript" src="../../static/js/action.js?t=1"></script>
+<script language="javascript">
+</script>
+
+</body>

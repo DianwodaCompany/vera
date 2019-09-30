@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>piper列表</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <link rel="stylesheet" type="text/css" href="../../static/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="../../static/css/bootstrap.min.css" >
+    <link rel="stylesheet" type="text/css" href="../../static/css/bootstrap-table.min.css" >
+</head>
+
+<body>
+
+<div >
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title text-center">piper列表</h3>
+        </div>
+        <div class="panel-body">
+            <table id="data_table" ></table>
+
+            <!-- redis侦听对话框 -->
+            <div class="modal fade " id="listenModel" style="z-index:9999" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div class="modal-dialog" style="z-index:9999">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">
+                                Redis侦听
+                            </h4>
+                        </div>
+                        <div class="modal-body" >
+                            <input type="hidden" id="listen-location" name="listen-location" value="">
+                            <div class="form-group ">
+                                <label>RedisCluster master name名称</label>
+                                <input type="text" class="form-control" id="masterName" name="masterName" AUTOCOMPLETE="OFF">
+                                <label>sentinels地址</label>
+                                <input type="text" class="form-control" id="sentinels" name="sentinels" AUTOCOMPLETE="OFF">
+                                <label>password</label>
+                                <input type="text" class="form-control" id="password" name="password" AUTOCOMPLETE="OFF">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" id="listern-saveBtn" class="btn btn-primary" data-dismiss="modal">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Piper同步对话框 -->
+            <div class="modal fade " id="syncModel" style="z-index:9999" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div class="modal-dialog" style="z-index:9999">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">
+                                Piper同步
+                            </h4>
+                        </div>
+                        <div class="modal-body" >
+                            <input type="hidden" id="sync-location" name="sync-location" value="">
+                            <div class="form-group ">
+                                <label>Piper Location</label>
+                                <input type="text" class="form-control" id="sync-descLocation" name="sync-descLocation" AUTOCOMPLETE="OFF">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" id="sync-saveBtn" class="btn btn-primary" data-dismiss="modal">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Piper主从复制对话框 -->
+            <div class="modal fade " id="copyModel" style="z-index:9999" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div class="modal-dialog" style="z-index:9999">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">
+                                Piper主从复制
+                            </h4>
+                        </div>
+                        <div class="modal-body" >
+                            <input type="hidden" id="copy-location" name="copy-location" value="">
+                            <div class="form-group ">
+                                <label>Piper Location</label>
+                                <input type="text" class="form-control" id="copy-descLocation" name="copy-descLocation" AUTOCOMPLETE="OFF">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" id="copy-saveBtn" class="btn btn-primary" data-dismiss="modal">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script type="text/javascript" src="../../static/js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="../../static/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../static/js/bootstrap-table.js"></script>
+<script type="text/javascript" src="../../static/js/bootstrap-table-zh-CN.js"></script>
+<script type="text/javascript" src="../../static/js/pagination.js"></script>
+<script type="text/javascript" src="../../static/js/select2.js"></script>
+<script type="text/javascript" src="../../static/js/dateUtil.js"></script>
+<script type="text/javascript" src="../../static/js/index.js"></script>
+<script language="javascript">
+</script>
+
+</body>

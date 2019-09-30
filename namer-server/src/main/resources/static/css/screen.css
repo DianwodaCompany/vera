@@ -1,0 +1,31 @@
+.removable_content {
+    padding: 3px;
+    display: inline-block;
+    color: #555;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.removable_content .removable-icon {
+    top: -8px;
+    right: -8px
+}
+
+#day-chart-summary {
+    margin-bottom: 10px;
+    padding: 5px 20px;
+    text-align: center;
+}
+
+#day-chart-summary ul {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+#day-chart-summary label {
+    margin-bottom: 0px;
+    margin-right: 2px;
+    font-weight: 500;
+}
