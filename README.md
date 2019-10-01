@@ -13,16 +13,11 @@
 - [系统详述](#系统详述)
     - [整体架构](#整体架构)
     - [Redis 多主数据同步问题](#redis-多主数据同步问题)
-    - [机房切换](#机房切换)
-        - [切换流程](#切换流程)
     - [高可用](#高可用)
-        - [XPipe 系统高可用](#xpipe-系统高可用)
+        - [Vera 系统高可用](#vera-系统高可用)
         - [Redis 自身高可用](#redis-自身高可用)
     - [测试数据](#测试数据)
         - [延时测试](#延时测试)
-    - [跨公网部署及架构](#跨公网部署及架构)
-- [深入了解](#深入了解)
-- [技术交流](#技术交流)
 - [License](#license)
 
 <!-- /MarkdownTOC -->
@@ -57,11 +52,30 @@ Redis 在点我达内部得到了广泛的使用，根据运维数据统计，�
 - 网络异常时减少全量同步  
 piper 将 Redis 日志数据缓存到磁盘，这样，可以缓存大量的日志数据 (Redis 将数据缓存到内存 ring buffer，容量有限)，当数据中心之间的网络出现较长时间异常时仍然可以续传日志数据。  
 - 更加灵活的数据传输方式
-1. piper之间传输协议可以自定义，方便支持压缩 (目前暂未支持)。
-2. 根据业务可以配置每次启动是从最新数据开始同步，还是从上一次的同步位置开始同步；
+1.piper之间传输协议可以自定义，方便支持压缩 (目前暂未支持)。2.根据业务可以配置每次启动是从最新数据开始同步，还是从上一次的同步位置开始同步；
 - 安全性提升  
 多个机房之间的数据传输往往需要通过公网进行，这样数据的安全性变得极为重要，piper 之间的数据传输也可以加密 (暂未实现)，提升安全性。
 
+## 高可用
+<a name="Vear-系统高可用"></a>
+### Vera 系统高可用
+如果 Piper 挂掉，多数据中心之间的数据传输可能会中断，解决这个问题，Vera设计了两种解决方式：
+1) Piper 有主备两个节点，备节点实时从主节点复制数据，当主节点挂掉后，备节点会被提升为主节点，代替主节点进行服务(主备功能将在下一个版本实现)。
+2) 预启动一个Piper作为备用，操作后台，将挂断的Piper上面的职能迁移到该备用Piper上面，从而恢复数据同步；
+<a name="redis-自身高可用"></a>
+### Redis 自身高可用
+Redis 也可能会挂，Redis 本身提供哨兵 (Sentinel) 机制保证集群的高可用。
 
+## 测试数据
+<a name="延时测试"></a>
+### 延时测试
+#### 测试方案
+测试方式如下图所示。新数据写入Redis Master，Piper1侦听到RedisMaster事件将数据写入本地文件，同时通知其它订阅该Piper的其它Piper来获取新数据，Piper2请求Piper1获取数据后，再写入Redis Master2, 整个测试延时时间为 t1+t2+t3。  
+![test](https://raw.github.com/DianwodaCompany/vera/master/doc/image/delay.jpg)  
+#### 测试数据
+因为Piper间获取新增数据有两种方式: 1. Consumer定时向Provider请求数据，采用pull的方式；2. 为避免没数据时频繁的pull, Provider会hold该请求，如果这时有新增数据，会重启该请求,使得Consumer能在第一时间获取该数据；
+在点我达生产环境单个机房进行了测试，大部分情况基本上是在ms级别的范围内。但如果由于Provider hold请求，导致Consumer超时未得到响应，此时Consumer会等待一些时间重新pull, 默认是10秒。
 
-
+<a name="license"></a>
+# License
+The project is licensed under the [Apache 2 license](https://github.com/DianwodaCompany/vera/master/LICENSE).
