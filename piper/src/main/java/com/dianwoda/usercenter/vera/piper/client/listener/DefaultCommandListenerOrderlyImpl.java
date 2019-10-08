@@ -33,21 +33,25 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
     }
     try {
       for (CommandExt command : commands) {
-        long storeTimeStramp = command.getStoreTimestamp();
-        log.info("data time:" + UtilAll.timeMillisToHumanString(storeTimeStramp));
-        if (this.piperClientInstance.isSyncCommandFilterSwitch() && ((storeTimeStramp + this.piperClientInstance.getCommandPostDueTimeMillis() < SystemClock.now()))) {
+        long storeTimeStamp = command.getStoreTimestamp();
+        log.info("command store data time:" + UtilAll.timeMillisToHumanString2(storeTimeStamp));
+
+        //  根据时间过滤数据
+        if (this.piperClientInstance.isSyncCommandFilterSwitch() && ((storeTimeStamp + this.piperClientInstance.getCommandPostDueTimeMillis() < SystemClock.now()))) {
           log.info("filter command:" + command + " because of storetime is too old!");
           continue;
         }
         if (command.getData() != null) {
           RedisCommand redisCommand = deserializer.deserialize(command.getData());
           if (this.piperClientInstance.getPiperClientInterImpl().getRedisFacadeProcessor().write(redisCommand)) {
-            log.info("Write into redis {} success, length {}", redisCommand, command.getDataLength());
+            log.info("Write into redis success, length {}", command.getDataLength());
+          } else {
+            log.error("Write into redis fail, redisCommand {}", redisCommand);
           }
         }
       }
     } catch (Exception e) {
-      log.error("comman cosume error", e);
+      log.error("command consume error", e);
       return ConsumeOrderlyStatus.SUSPEND;
     }
     return ConsumeOrderlyStatus.SUCCESS;

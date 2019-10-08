@@ -35,7 +35,7 @@ public class NamerManagerProcessor implements NettyRequestProcessor {
   @Override
   public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request)
           throws RemotingCommandException {
-    log.info(String.format("receive request, %d %s %s",
+    log.info(String.format("receive request, code=%d %s %s",
             request.getCode(),
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), request));
 
@@ -73,6 +73,8 @@ public class NamerManagerProcessor implements NettyRequestProcessor {
       }
       runningInfo.getProperties().setProperty(ConsumerRunningInfo.PROP_NAMERSERVER_ADDR, namerServers);
       runningInfo.getProperties().setProperty(ConsumerRunningInfo.PROP_CLIENT_VERSION, VeraVersion.getVersionDesc(VeraVersion.CURRENT_VERSION));
+      runningInfo.getProperties().setProperty(ConsumerRunningInfo.PROP_BLOCK_FILE_CONSUME_OFFSET,
+              this.piperClientInstance.getOffsetManager().encode());
     }
     if (runningInfo != null) {
       response.setCode(ResponseCode.SUCCESS);

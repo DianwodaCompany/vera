@@ -112,6 +112,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
             requestHeader.getGroup(),
             requestHeader.getLocation(),
             requestHeader.getPiperId(),
+            requestHeader.getHostName(),
             requestHeader.getHaServerAddr(),
             ctx.channel());
     if (request.getBody() != null) {

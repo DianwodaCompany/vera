@@ -196,6 +196,8 @@ public class PiperClientInterImpl {
     pullRequest.setTargetLocation(syncPiperLocation);
     ProcessQueue pq = this.createProcessQueue(syncPiperLocation);
     pullRequest.setProcessQueue(pq);
+    this.piperClientInstance.getPiperController().getOffsetManager().
+            commitOffsetForce(syncPiperLocation, nextOffset);
     this.piperClientInstance.getPiperController().getPiperClientInstance().
             getPullMessageService().executePullRequestImmediately(pullRequest);
     this.syncPiperStateMap.put(syncPiperLocation, TaskState.TASK_SYNC_PIPER_RUNNING);

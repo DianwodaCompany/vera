@@ -51,18 +51,26 @@ public class ConsumeCommandOrderlyService {
     @Override
     public void run() {
       try {
-        processQueue.getConsumeLock().lock();
+        processQueue.getConsumeLock().lockInterruptibly();
         for (boolean continueConsume = true; continueConsume; ) {
+          if (this.processQueue.isDropped()) {
+            log.warn("the process queue not be able to consume, because it's dropped. {}", this.processQueue);
+            break;
+          }
           List<CommandExt> commands = processQueue.takeCommands(ConsumeCommandOrderlyService.this.defaultPullConsumer.getConsumeMessageBatchMaxSize());
+
           if (!commands.isEmpty()) {
             long beginTimestamp = SystemClock.now();
             ConsumeOrderlyStatus status = ConsumeCommandOrderlyService.this.commandListener.consumer(commands);
             long consumeRT = SystemClock.now() - beginTimestamp;
             ConsumeCommandOrderlyService.this.getConsumerStatsManager().incConsumeRT(
                     processQueue.getSyncPiperLocation(), consumeRT);
-            continueConsume = processCommandsResult(status, commands, processQueue);
+            boolean processResult = processCommandsResult(status, commands, processQueue);
+            if (!processResult) {
+              log.warn("process command consume result {}, ConsumeOrderlyStatus:" + status, processResult);
+            }
           } else {
-            continueConsume = false;
+            break;
           }
         }
       } catch (Exception e) {
@@ -86,20 +94,26 @@ public class ConsumeCommandOrderlyService {
       case SUSPEND:
         this.defaultPullConsumer.getConsumerStatsManager().incConsumeFailedTPS(processQueue.getSyncPiperLocation(), commands.size());
         if (checkConsumeTime(commands)) {
+          log.error("ConsumeRequest consume again, msg size:" + commands.size());
+
           processQueue.consumeAgain(commands);
-          submitConsumeRequestLater(processQueue, defaultPullConsumer.getSuspendCurrentQueueTimeMillis());
+//          submitConsumeRequestLater(processQueue, defaultPullConsumer.getSuspendCurrentQueueTimeMillis());
           continueConsume = false;
         } else {
           this.defaultPullConsumer.getConsumerStatsManager().incConsumeFinalFailedTPS(processQueue.getSyncPiperLocation(), commands.size());
 
           log.error("ConsumeRequest already consume max times:" + defaultPullConsumer.getConsumeTimeMax() +
                   ", msg size:" + commands.size() + ",   drop it!" + commands.get(0).getData());
-          RedisCommandDeserializer deserializer = new RedisCommandDeserializer();
-          StringBuilder sb = new StringBuilder();
-          commands.forEach(command -> {
-            sb.append("command: ").append(deserializer.deserialize(command.getData())).append(",");
-          });
-          log.error("drop redis command:" + sb.toString());
+          try {
+            RedisCommandDeserializer deserializer = new RedisCommandDeserializer();
+            StringBuilder sb = new StringBuilder();
+            commands.forEach(command -> {
+              sb.append("command: ").append(deserializer.deserialize(command.getData())).append(",");
+            });
+            log.error("drop redis command:" + sb.toString());
+          } catch (Exception e) {
+            log.error("drop redis command error", e);
+          }
           commitOffset = processQueue.commit();
         }
         break;

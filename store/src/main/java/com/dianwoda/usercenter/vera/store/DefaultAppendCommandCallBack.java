@@ -1,6 +1,7 @@
 package com.dianwoda.usercenter.vera.store;
 
 import com.dianwoda.usercenter.vera.common.SystemClock;
+import com.dianwoda.usercenter.vera.common.protocol.Common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ public class DefaultAppendCommandCallBack implements AppendCommandCallBack {
   protected static final Logger log = LoggerFactory.getLogger(DefaultAppendCommandCallBack.class);
   private final ByteBuffer msgStoreItemMemory;
   private CommandStore commandStore;
+  private static int FILE_END_MARGIN_LEFT = 4 + 4;
 
   public DefaultAppendCommandCallBack(CommandStore commandStore) {
     this.commandStore = commandStore;
@@ -38,12 +40,12 @@ public class DefaultAppendCommandCallBack implements AppendCommandCallBack {
     long wroteOffset = fileFromOffset + byteBuffer.position();
     int totalSize = calculateCommandLength(commandInter.getDataLength());
 
-    if (totalSize > maxBlank) {
+    if (totalSize + FILE_END_MARGIN_LEFT> maxBlank) {
       resetByteBuffer(this.msgStoreItemMemory, maxBlank);
       // length
       this.msgStoreItemMemory.putInt(maxBlank);
       // magic code
-      this.msgStoreItemMemory.putInt(DefaultCommandStore.BLANK_MAGIC_CODE);
+      this.msgStoreItemMemory.putInt(Common.BLANK_MAGIC_CODE);
       // the remaining space may be any vale
       byteBuffer.put(this.msgStoreItemMemory.array(), 0, maxBlank);
       log.warn("message match end of file, maxBlank:" + maxBlank + ", totalSize:" + totalSize);
@@ -54,7 +56,7 @@ public class DefaultAppendCommandCallBack implements AppendCommandCallBack {
     // 1 total size
     this.msgStoreItemMemory.putInt(totalSize);
     // 2 magic code
-    this.msgStoreItemMemory.putInt(DefaultCommandStore.MESSAGE_MAGIC_CODE);
+    this.msgStoreItemMemory.putInt(Common.MESSAGE_MAGIC_CODE);
     // 3 crc
     this.msgStoreItemMemory.putInt(commandInter.getCrc());
     // 4 store timestamp

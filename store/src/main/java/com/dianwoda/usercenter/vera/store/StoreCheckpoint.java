@@ -33,7 +33,7 @@ public class StoreCheckpoint {
       this.physicMsgTimestamp = this.mappedByteBuffer.getLong(0);
 
       log.info("store checkpoint file physicMsgTimestamp " + this.physicMsgTimestamp + "," +
-              UtilAll.timeMillisToHumanString(this.physicMsgTimestamp));
+              UtilAll.timeMillisToHumanString2(this.physicMsgTimestamp));
     } else {
       log.info("store checkpoint file not exists," + scpPath);
     }
@@ -48,6 +48,7 @@ public class StoreCheckpoint {
     } catch (IOException e) {
       log.error("Failed to properly close the channnel", e);
     }
+    log.info("store checkpoint file shutdown, physicMsgTimestamp:" + UtilAll.timeMillisToHumanString2(this.physicMsgTimestamp));
   }
 
   public void flush() {

@@ -16,6 +16,7 @@ public class PiperInfoDTO {
   private String location;
   private String group;
   private String role;
+  private String hostName;
 
   // listen redis
   private String masterName;
@@ -38,6 +39,7 @@ public class PiperInfoDTO {
     this.group = piperData.getGroup();
     this.updateTime = updateTime;
     this.role = piperData.getPiperId() == 0 ? "Master" : "Slave";
+    this.hostName = piperData.getHostName();
 
     // listen redis
     this.masterName = piperTaskData != null ? piperTaskData.getMasterName() : null;
@@ -155,5 +157,9 @@ public class PiperInfoDTO {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public String getHostName() {
+    return hostName;
   }
 }

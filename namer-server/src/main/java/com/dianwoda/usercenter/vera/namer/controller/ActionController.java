@@ -6,6 +6,7 @@ import com.dianwoda.usercenter.vera.namer.dto.ActionInfoDTO;
 import com.dianwoda.usercenter.vera.namer.routeinfo.ActionManager;
 import com.dianwoda.usercenter.vera.namer.tools.DefaultAdminExtImpl;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,7 +45,7 @@ public class ActionController {
       actionInfoDTOList.add(actionInfo);
     }
     actionInfoDTOList = actionInfoDTOList.stream().filter(a ->
-            searchText == null ? true : a.getSrcPiperData().getLocation().equals(searchText))
+            StringUtils.isEmpty(searchText) ? true : a.getSrcPiperData().getLocation().equals(searchText))
             .sorted(Comparator.comparing(ActionInfoDTO::getId).reversed())
             .collect(Collectors.toList());
 

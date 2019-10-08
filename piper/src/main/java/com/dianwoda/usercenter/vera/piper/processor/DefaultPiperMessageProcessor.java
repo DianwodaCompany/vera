@@ -26,7 +26,7 @@ public class DefaultPiperMessageProcessor implements NettyRequestProcessor {
 
   @Override
   public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
-    log.info(String.format("receive request, %d %s %s",
+    log.info(String.format("receive request, code=%d %s %s",
             request.getCode(),
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
             request));

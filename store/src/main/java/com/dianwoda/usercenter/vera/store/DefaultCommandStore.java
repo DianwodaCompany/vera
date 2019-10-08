@@ -8,6 +8,7 @@ import com.dianwoda.usercenter.vera.common.UtilAll;
 import com.dianwoda.usercenter.vera.common.message.Command;
 import com.dianwoda.usercenter.vera.common.message.CommandDecoder;
 import com.dianwoda.usercenter.vera.common.message.GetCommandStatus;
+import com.dianwoda.usercenter.vera.common.protocol.Common;
 import com.dianwoda.usercenter.vera.store.config.PiperPathConfigHelper;
 import com.dianwoda.usercenter.vera.store.listener.CommandArrivingListener;
 import com.dianwoda.usercenter.vera.store.stats.PiperStatsManager;
@@ -30,10 +31,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DefaultCommandStore implements CommandStore {
   protected static final Logger log = LoggerFactory.getLogger(DefaultCommandStore.class);
-  // Message's MAGIC CODE daa320a7
-  public final static int MESSAGE_MAGIC_CODE = 0xAABBCCDD ^ 1880681586 + 8;
-  // End of file empty MAGIC CODE cbd43194
-  public final static int BLANK_MAGIC_CODE = 0xBBCCDDEE ^ 1880681586 + 8;
   public static int MAX_SIZE = 1024 * 1024 * 4;
   private static int blockFileSize = 1024 * 1024 * 20; // 20M
   // Resource reclaim interval
@@ -193,7 +190,7 @@ public class DefaultCommandStore implements CommandStore {
   private boolean isBlockFileMatchedRecover(BlockFile blockFile) {
     ByteBuffer byteBuffer = blockFile.sliceByteBuffer();
     int magicCode = byteBuffer.getInt(CommandDecoder.MAGIC_CODE_POSITION);
-    if (magicCode != MESSAGE_MAGIC_CODE) {
+    if (magicCode != Common.MESSAGE_MAGIC_CODE) {
       return false;
     }
 
@@ -222,9 +219,9 @@ public class DefaultCommandStore implements CommandStore {
       // 2 magic code
       int magicCode = byteBuffer.getInt();
       switch (magicCode) {
-        case MESSAGE_MAGIC_CODE:
+        case Common.MESSAGE_MAGIC_CODE:
           break;
-        case BLANK_MAGIC_CODE:
+        case Common.BLANK_MAGIC_CODE:
           return new DispatchRequest(0, true);
         default:
           log.warn("found a illegal magic code 0x" + Integer.toHexString(magicCode) + " with pos:" + pos);
@@ -345,7 +342,7 @@ public class DefaultCommandStore implements CommandStore {
             result.addCommand(selectMappedBufferResult);
             newOffset += selectMappedBufferResult.getSize();
             nextBeginOffset = newOffset;
-            log.info("offset:" + offset + " nextBeginOffset:" + nextBeginOffset + " status:" + status.name());
+            log.info("oldOffset:" + offset + " nextBeginOffset:" + nextBeginOffset + " status:" + status.name());
           } finally {
             selectMappedBufferResult.release();
           }
@@ -446,6 +443,7 @@ public class DefaultCommandStore implements CommandStore {
   class FlushRealTimeService implements Runnable {
     private boolean isStop = false;
     private int FLUSH_SPAN = 1000 * 10;
+    private int FORCE_FLUSH_SPAN = 1000 * 30;
     private CountDownLatch2 waitPoint = new CountDownLatch2(1);
     private AtomicBoolean hasNotified = new AtomicBoolean(false);
 
@@ -482,11 +480,14 @@ public class DefaultCommandStore implements CommandStore {
       int interval = 1000 * 5;
       while (!this.isStop()) {
         boolean canFlush = false;
-
+        boolean forceFlush = false;
         if (SystemClock.now() - startFlushTime >= FLUSH_SPAN) {
           canFlush = true;
         }
-        if (canFlush || !waitForRunning(interval)) {
+        if (SystemClock.now() - startFlushTime >= FORCE_FLUSH_SPAN) {
+          forceFlush = true;
+        }
+        if (forceFlush || (canFlush && !waitForRunning(interval))) {
           blockFileQueue.flush(0);
           startFlushTime = SystemClock.now();
 

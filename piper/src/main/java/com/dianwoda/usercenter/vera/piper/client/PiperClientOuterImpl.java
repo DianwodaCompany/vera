@@ -38,7 +38,7 @@ public class PiperClientOuterImpl {
   private final PiperClientInstance piperClientInstance;
   private final RemotingClient remotingClient;
   private final NamerManagerProcessor namerManagerProcessor;
-  private final RPCHook rpcHook;
+//  private final RPCHook rpcHook;
   private final ExecutorService namerManagerExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
     @Override
     public Thread newThread(Runnable r) {
@@ -50,8 +50,8 @@ public class PiperClientOuterImpl {
                               final NamerManagerProcessor namerManagerProcessor) {
     this.piperClientInstance = piperClientInstance;
     this.remotingClient = new NettyRemotingClient(nettyClientConfig, null);
-    this.rpcHook = new DefaultRPCHookImpl();
-    this.remotingClient.registerRPCHook(this.rpcHook);
+//    this.rpcHook = new DefaultRPCHookImpl();
+//    this.remotingClient.registerRPCHook(this.rpcHook);
     this.namerManagerProcessor = namerManagerProcessor;
     /**
      * from namer
@@ -63,12 +63,12 @@ public class PiperClientOuterImpl {
   }
 
   public void start() {
-    this.rpcHook.start();
+//    this.rpcHook.start();
     this.remotingClient.start();
   }
 
   public void stop() {
-    this.rpcHook.stop();
+//    this.rpcHook.stop();
     this.remotingClient.shutdown();
   }
 
@@ -87,6 +87,7 @@ public class PiperClientOuterImpl {
                                            final String group,
                                            final String location,
                                            final int piperId,
+                                           final String hostName,
                                            final String haServerLocation,
                                            final boolean oneway,
                                            final int timeoutMills) {
@@ -97,7 +98,7 @@ public class PiperClientOuterImpl {
       for (String namerLocation : namerLocatoinList) {
         try {
           RegisterPiperResult result = this.registerPiper(piperTaskData, group, namerLocation, location, piperId,
-                  haServerLocation, oneway, timeoutMills);
+                  hostName, haServerLocation, oneway, timeoutMills);
           if (result != null) {
             registerBrokerResult = result;
           }
@@ -116,6 +117,7 @@ public class PiperClientOuterImpl {
                                             final String namerLocation,
                                             final String location,
                                             final int piperId,
+                                            final String hostName,
                                             final String haServerLocation,
                                             final boolean oneway,
                                             final int timeoutMills
@@ -126,6 +128,7 @@ public class PiperClientOuterImpl {
     requestHeader.setLocation(location);
     requestHeader.setPiperId(piperId);
     requestHeader.setHaServerAddr(haServerLocation);
+    requestHeader.setHostName(hostName);
     RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.REGISTER_PIPER, requestHeader);
 
     if (piperTaskData != null) {
@@ -259,7 +262,7 @@ public class PiperClientOuterImpl {
         try {
           PullResult pullResult = PiperClientOuterImpl.this.processPullResponse(response);
           assert pullResult != null;
-          pullCallback.OnSuccess(pullResult);
+          pullCallback.onSuccess(pullResult);
         } catch (Exception e) {
           pullCallback.onException(e, RequestExceptionReason.OTHER);
         }

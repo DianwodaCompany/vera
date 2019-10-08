@@ -59,7 +59,7 @@ public class NamerController {
       public void run() {
         NamerController.this.routeInfoManager.scanNotActivePiper();
       }
-    }, 5, 10, TimeUnit.SECONDS);
+    }, 5, 30, TimeUnit.SECONDS);
     return true;
   }
 

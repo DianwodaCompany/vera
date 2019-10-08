@@ -55,7 +55,7 @@ public class DefaultCircleDisposeHandler<RedisCommand> implements CircleDisposeH
   public boolean addCycleData(RedisCommand data) {
     if (!commandSet.contains(data)) {
 //      deque.add(new DelayedElement(2 * 60 * 60 * 1000, data)); // delay two hours
-      deque.add(new DelayedElement(30 * 1000, data)); // delay 30 seconds
+      deque.add(new DelayedElement(60 * 1000, data)); // delay 60 seconds
       commandSet.add(data);
       return true;
     }

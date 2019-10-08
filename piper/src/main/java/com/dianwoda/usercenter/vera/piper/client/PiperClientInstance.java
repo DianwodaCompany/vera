@@ -50,7 +50,7 @@ public class PiperClientInstance {
   // 10分钟内的redis command数据才允许同步
   private static final int COMMAND_POST_DUE_TIME_MILLIS = 1000 * 60 * 10;
   // 同步过来的数据是否按时间过滤的开关
-  private boolean syncCommandFilterSwitch = true;
+  private boolean syncCommandFilterSwitch = false;
 
   private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
     @Override

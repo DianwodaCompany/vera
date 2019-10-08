@@ -55,9 +55,11 @@ public class RedisCommand implements Serializable {
    */
   private byte[][] members;
 
-  private int ex;
+  private long expiredValue;
 
-  private long px;
+  private int expiredType;
+//  private int expiredType;
+//  private Long expiredValue;
 
   @Override
   public boolean equals(Object o) {
@@ -65,7 +67,7 @@ public class RedisCommand implements Serializable {
       if (o == null || getClass() != o.getClass()) return false;
       RedisCommand that = (RedisCommand) o;
       return type == that.type &&
-              Arrays.equals(key, that.key);
+              Arrays.equals(key, that.key) && Arrays.equals(value, that.value);
   }
 
   @Override
@@ -73,6 +75,9 @@ public class RedisCommand implements Serializable {
 
       int result = Objects.hash(super.hashCode(), type);
       result = 31 * result + Arrays.hashCode(key);
+      if (value != null) {
+        result = 31 * result + Arrays.hashCode(value);
+      }
       return result;
   }
 
@@ -104,12 +109,12 @@ public class RedisCommand implements Serializable {
       return members;
   }
 
-  public int getEx() {
-      return ex;
+  public long getExpiredValue() {
+      return expiredValue;
   }
 
-  public long getPx() {
-      return px;
+  public int getExpiredType() {
+      return expiredType;
   }
 
   public void setType(byte type) {
@@ -140,17 +145,19 @@ public class RedisCommand implements Serializable {
       this.members = members;
   }
 
-  public void setEx(int ex) {
-      this.ex = ex;
+  public void setExpiredValue(long expiredValue) {
+      this.expiredValue = expiredValue;
   }
 
-  public void setPx(long px) {
-      this.px = px;
+  public void setExpiredType(int expiredType) {
+      this.expiredType = expiredType;
   }
 
   @Override
   public String toString() {
-    return "type:" + this.type + " key:" + new String(this.key) + " value:" + new String(this.value);
+    return "type:" + this.type + " key:" + (this.key == null ? "null" : new String(this.key)) +
+            " value:" + (this.value == null ? "null" :
+            new String(this.value).substring(0, Math.min(this.value.length, 100)));
   }
 
 }

@@ -51,6 +51,6 @@ public class PullResult {
   @Override
   public String toString() {
     return "PullStatus:" + pullStatus.name() + " nextBeginOffset:" + nextBeginOffset + " minOffset:" + minOffset +
-            " maxOffset:" + maxOffset;
+            " maxOffset:" + maxOffset + " cmd size:" + (cmdFoundList != null ? cmdFoundList.size() : 0);
   }
 }

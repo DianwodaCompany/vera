@@ -15,6 +15,7 @@ public class ConsumerRunningInfo extends RemotingSerializable {
 
   public static final String PROP_THREADPOOL_CORE_SIZE = "PROP_THREADPOOL_CORE_SIZE";
   public static final String PROP_CONSUMER_START_TIMESTAMP = "PROP_CONSUMER_START_TIMESTAMP";
+  public static final String PROP_BLOCK_FILE_CONSUME_OFFSET = "PROP_BLOCK_FILE_CONSUME_OFFSET";
   public static final String LOCATION = "LOCATION";
   private Properties properties = new Properties();
   private TreeMap<String/* location */, ConsumeStatus> statusTable = new TreeMap<String, ConsumeStatus>();
@@ -55,6 +56,7 @@ public class ConsumerRunningInfo extends RemotingSerializable {
     sb.append(" | ").append(PROP_THREADPOOL_CORE_SIZE).append(":" + properties.getProperty(PROP_THREADPOOL_CORE_SIZE));
     sb.append(" | ").append(PROP_CONSUMER_START_TIMESTAMP).append(":" + UtilAll.timeMillisToHumanString2(
             Long.parseLong(properties.getProperty(PROP_CONSUMER_START_TIMESTAMP))));
+    sb.append(" | ").append(PROP_BLOCK_FILE_CONSUME_OFFSET).append(":" + properties.getProperty(PROP_BLOCK_FILE_CONSUME_OFFSET));
     statusTable.forEach((key, value) -> {
       sb.append(" | ").append(LOCATION).append(":" + key).append(", ConsumeStatus: " + value);
     });

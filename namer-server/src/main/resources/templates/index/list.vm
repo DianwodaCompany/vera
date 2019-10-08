@@ -38,11 +38,14 @@
                             <input type="hidden" id="listen-location" name="listen-location" value="">
                             <div class="form-group ">
                                 <label>RedisCluster master name名称</label>
-                                <input type="text" class="form-control" id="masterName" name="masterName" AUTOCOMPLETE="OFF">
+                                <input type="text" class="form-control" id="masterName" name="masterName"
+                                       AUTOCOMPLETE="OFF" value="master-base-qa3">
                                 <label>sentinels地址</label>
-                                <input type="text" class="form-control" id="sentinels" name="sentinels" AUTOCOMPLETE="OFF">
+                                <input type="text" class="form-control" id="sentinels" name="sentinels"
+                                       AUTOCOMPLETE="OFF" value="172.24.64.79:26002">
                                 <label>password</label>
-                                <input type="text" class="form-control" id="password" name="password" AUTOCOMPLETE="OFF">
+                                <input type="text" class="form-control" id="password" name="password"
+                                       AUTOCOMPLETE="OFF" value="H5DUg@_redis">
                             </div>
 
                         </div>

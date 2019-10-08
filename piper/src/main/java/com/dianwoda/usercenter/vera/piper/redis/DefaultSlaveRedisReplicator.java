@@ -1,6 +1,7 @@
 package com.dianwoda.usercenter.vera.piper.redis;
 
 
+import com.dianwoda.usercenter.vera.common.ThreadFactoryImpl;
 import com.dianwoda.usercenter.vera.common.redis.command.RedisCommand;
 import com.dianwoda.usercenter.vera.piper.redis.command.RedisCommandBuilder;
 import com.moilioncircle.redis.replicator.RedisReplicator;
@@ -14,6 +15,7 @@ import redis.clients.jedis.HostAndPort;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.concurrent.*;
 
 /**
  * @program: vera
@@ -27,6 +29,8 @@ public class DefaultSlaveRedisReplicator {
   private CommandInterceptor<RedisCommand> commandInterceptor;
   private RedisReplicatorListener redisReplicatorListener;
   private Replicator replicator;
+  private ExecutorService redisReplicatorThreadPoolExecutor = Executors.newSingleThreadScheduledExecutor(
+          new ThreadFactoryImpl("SlaveRedisReplicatorThread_"));
 
   public DefaultSlaveRedisReplicator(HostAndPort addr) {
     try {
@@ -57,14 +61,14 @@ public class DefaultSlaveRedisReplicator {
 
 
   public void start() {
-    new Thread(() -> {
+    redisReplicatorThreadPoolExecutor.submit(() -> {
       try {
         replicator.open();
       } catch (IOException e) {
         logger.error("error", e);
         throw new RuntimeException(e);
       }
-    }).start();
+    });
   }
 
   public void stop() {

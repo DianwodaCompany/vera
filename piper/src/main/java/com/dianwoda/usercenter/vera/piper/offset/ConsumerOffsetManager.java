@@ -41,6 +41,10 @@ public class ConsumerOffsetManager extends ConfigManager {
     }
   }
 
+  public void commitOffsetForce(final String location, final long offset) {
+    this.offsetTable.put(location, offset);
+  }
+
   public long getOffset(final String location) {
     String key = location;
     Long storeOffset = this.offsetTable.get(key);

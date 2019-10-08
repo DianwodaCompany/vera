@@ -93,13 +93,7 @@ public class RedisFacadeProcessor {
   }
 
   public void start() throws IOException {
-    new Thread(() -> {
-      try {
-        this.slaveRedisReplicator.getReplicator().open();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }).start();
+    this.slaveRedisReplicator.start();
 
   }
 
@@ -112,7 +106,7 @@ public class RedisFacadeProcessor {
       this.redisWriter.stop();
     }
 
-    this.redic.shutdown();
+//    this.redic.shutdown();
   }
 
 

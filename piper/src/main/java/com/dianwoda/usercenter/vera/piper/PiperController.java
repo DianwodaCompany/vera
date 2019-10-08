@@ -127,7 +127,7 @@ public class PiperController {
   public void registerPiper(boolean oneway) {
     PiperTaskData piperTaskData = this.piperClientInstance.getPiperClientInterImpl().getPiperTaskInfo();
     RegisterPiperResult registerPiperResult = this.piperClientInstance.getPiperClientAPIImpl().registerPiper(piperTaskData,
-            this.piperConfig.group(), this.piperConfig.location(), this.piperConfig.piperId(),
+            this.piperConfig.group(), this.piperConfig.location(), this.piperConfig.piperId(), this.piperConfig.getHostName(),
             getHAServerLocation(), oneway, piperConfig.getRegisterPiperTimeoutMills());
 
     if (registerPiperResult != null) {

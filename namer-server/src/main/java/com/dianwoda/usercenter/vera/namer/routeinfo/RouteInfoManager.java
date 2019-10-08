@@ -40,7 +40,7 @@ public class RouteInfoManager {
 
   // 注册piper
   public RegisterPiperResult registerPiper(final String group, final String location, final int piperId,
-                                           final String haServerLocation, final Channel channel) {
+                                           final String hostName, final String haServerLocation, final Channel channel) {
     RegisterPiperResult result = new RegisterPiperResult();
     PiperInfo piperInfo = this.piperDataMap.get(group);
     if (piperInfo == null) {
@@ -48,7 +48,7 @@ public class RouteInfoManager {
       this.piperDataMap.put(group, piperInfo);
     }
     Map<Integer, PiperData> piperDatas = piperInfo.getPiperDatas();
-    piperDatas.put(piperId, new PiperData(location, group, piperId));
+    piperDatas.put(piperId, new PiperData(location, group, piperId, hostName));
 
     PiperLiveInfo prevPiperLiveInfo = this.piperLiveInfoMap.put(location,
             new PiperLiveInfo(SystemClock.now(), channel, haServerLocation));

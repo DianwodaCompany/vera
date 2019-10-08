@@ -84,7 +84,7 @@ public class Redic extends Jedis {
     CommandType type = CommandType.toEnum(command.getType());
     switch (type) {
       case SET:
-        this.saveValueByKey(command.getKey(), command.getValue(), command.getEx());
+        this.saveValueByKey(command.getKey(), command.getValue(), Long.valueOf(command.getExpiredValue()).intValue());
         break;
       case INCR:
         this.incr(command.getKey());

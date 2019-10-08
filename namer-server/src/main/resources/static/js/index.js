@@ -6,7 +6,7 @@ $(document).ready(function () {
         title: '唯一地址',
         align: 'center',
         formatter: function (value, row, index) {
-            return row.location + '<br> (' + row.group + ')';
+            return row.location + '<br> (' + row.group + ', ' + row.hostName + ')';
         }
     }, {
         field: 'role',

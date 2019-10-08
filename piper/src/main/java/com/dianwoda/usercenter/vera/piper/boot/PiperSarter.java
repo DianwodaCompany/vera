@@ -1,6 +1,7 @@
 package com.dianwoda.usercenter.vera.piper.boot;
 
 import com.dianwoda.usercenter.vera.common.SystemClock;
+import com.dianwoda.usercenter.vera.common.util.NetUtils;
 import com.dianwoda.usercenter.vera.piper.PiperController;
 import com.dianwoda.usercenter.vera.piper.PiperFactory;
 import com.dianwoda.usercenter.vera.piper.config.PiperConfig;
@@ -79,6 +80,7 @@ public class PiperSarter implements CommandLineRunner, EnvironmentAware {
   @Override
   public void setEnvironment(Environment environment) {
     this.piperConfig = new PiperConfig(environment);
+    this.piperConfig.setHostName(NetUtils.getLocalHostname());
     this.piper = PiperFactory.make(this.piperConfig);
   }
 }

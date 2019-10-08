@@ -24,14 +24,14 @@ public class RedisCommandBuilder {
       swordCommand.setType(CommandType.SET.getValue());
       swordCommand.setKey(setCommand.getKey());
       swordCommand.setValue(setCommand.getValue());
-      swordCommand.setEx(setCommand.getEx() == null ? 0 : setCommand.getEx());
-      swordCommand.setPx(setCommand.getPx() == null ? 0 : setCommand.getPx());
+      swordCommand.setExpiredValue(setCommand.getExpiredValue() == null ? 0 : setCommand.getExpiredValue());
+      swordCommand.setExpiredType(setCommand.getExpiredType() == null ? 0 : setCommand.getExpiredType().ordinal());
     } else if (command instanceof SetExCommand) {
       SetExCommand setCommand = (SetExCommand) command;
       swordCommand.setType(CommandType.SET_EX.getValue());
       swordCommand.setKey(setCommand.getKey());
       swordCommand.setValue(setCommand.getValue());
-      swordCommand.setEx(setCommand.getEx());
+      swordCommand.setExpiredValue(setCommand.getEx());
     } else if (command instanceof SetNxCommand) {
       SetNxCommand setCommand = (SetNxCommand) command;
       swordCommand.setType(CommandType.SET_NX.getValue());

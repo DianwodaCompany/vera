@@ -9,6 +9,7 @@ import com.dianwoda.usercenter.vera.common.protocol.header.PullMessageRequestHea
 import com.dianwoda.usercenter.vera.common.protocol.header.PullMessageResponseHeader;
 import com.dianwoda.usercenter.vera.piper.PiperController;
 import com.dianwoda.usercenter.vera.piper.longpolling.PullRequest;
+import com.dianwoda.usercenter.vera.remoting.common.RemotingHelper;
 import com.dianwoda.usercenter.vera.remoting.exception.RemotingCommandException;
 import com.dianwoda.usercenter.vera.remoting.netty.NettyRequestProcessor;
 import com.dianwoda.usercenter.vera.remoting.netty.RequestTask;
@@ -74,6 +75,10 @@ public class PullMessageProcessor implements NettyRequestProcessor {
 
   @Override
   public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
+    log.info(String.format("receive request, code=%d %s %s",
+            request.getCode(),
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), request));
+
     return this.processRequest(ctx.channel(), request, true);
   }
 

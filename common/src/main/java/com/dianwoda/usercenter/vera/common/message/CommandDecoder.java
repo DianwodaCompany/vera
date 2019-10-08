@@ -1,5 +1,7 @@
 package com.dianwoda.usercenter.vera.common.message;
 
+import com.dianwoda.usercenter.vera.common.protocol.Common;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +50,9 @@ public class CommandDecoder {
       // 2 magic code
       int magicCode = byteBuffer.getInt();
       commandExt.setMagicCode(magicCode);
+      if (magicCode != Common.MESSAGE_MAGIC_CODE) {
+        return null;
+      }
 
       // 3 crc
       int crc = byteBuffer.getInt();

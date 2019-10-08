@@ -4,9 +4,7 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketAddress;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
 
@@ -22,7 +20,7 @@ public class NetUtils {
   private static volatile InetAddress LOCAL_ADDRESS = null;
 
   private static boolean isValidAddress(InetAddress address) {
-    if (address == null || address.isLoopbackAddress()){
+    if (address == null || address.isLoopbackAddress()) {
       return false;
     }
     String name = address.getHostAddress();
@@ -38,7 +36,7 @@ public class NetUtils {
   }
 
   public static InetAddress getLocalAddress() {
-    if (LOCAL_ADDRESS != null){
+    if (LOCAL_ADDRESS != null) {
       return LOCAL_ADDRESS;
     }
     InetAddress localAddress = getLocalAddress0();
@@ -102,8 +100,36 @@ public class NetUtils {
 
       return addr;
     }
-
     return "";
   }
 
+  public static String getLocalHostname() {
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      return addr.getHostName();
+    } catch (UnknownHostException var7) {
+      try {
+        Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
+
+        while (interfaces.hasMoreElements()) {
+          NetworkInterface nic = (NetworkInterface) interfaces.nextElement();
+          Enumeration addresses = nic.getInetAddresses();
+
+          while (addresses.hasMoreElements()) {
+            InetAddress address = (InetAddress) addresses.nextElement();
+            if (!address.isLoopbackAddress()) {
+              String hostname = address.getHostName();
+              if (hostname != null) {
+                return hostname;
+              }
+            }
+          }
+        }
+      } catch (SocketException var6) {
+        return "UNKNOWN_LOCALHOST";
+      }
+
+      return "UNKNOWN_LOCALHOST";
+    }
+  }
 }

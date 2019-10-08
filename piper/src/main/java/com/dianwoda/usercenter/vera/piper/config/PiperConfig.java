@@ -13,6 +13,7 @@ public class PiperConfig {
   private int registerPiperTimeoutMills = 6000;
   private int unregisterPiperTimeoutMills = 500;
   private Environment environment;
+  private String hostName;
 
   public PiperConfig(Environment environment) {
     this.environment = environment;
@@ -54,5 +55,13 @@ public class PiperConfig {
 
   public int getUnregisterPiperTimeoutMills() {
     return unregisterPiperTimeoutMills;
+  }
+
+  public String getHostName() {
+    return hostName;
+  }
+
+  public void setHostName(String hostName) {
+    this.hostName = hostName;
   }
 }

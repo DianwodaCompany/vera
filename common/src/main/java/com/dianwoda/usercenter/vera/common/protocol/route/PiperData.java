@@ -8,11 +8,13 @@ public class PiperData {
   private String location;
   private String group;
   private int piperId;
+  private String hostName;
 
-  public PiperData(String location, String group, int piperId) {
+  public PiperData(String location, String group, int piperId, String hostName) {
     this.location = location;
     this.group = group;
     this.piperId = piperId;
+    this.hostName = hostName;
   }
 
   public String getLocation() {
@@ -42,6 +44,10 @@ public class PiperData {
   @Override
   public int hashCode() {
     return location.hashCode() + group.hashCode() + piperId;
+  }
+
+  public String getHostName() {
+    return hostName;
   }
 
   @Override

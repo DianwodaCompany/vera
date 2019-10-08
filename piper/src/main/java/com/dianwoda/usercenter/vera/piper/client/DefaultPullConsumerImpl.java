@@ -45,7 +45,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Batch pull size
    */
-  private int pullBatchSize = 32;
+  private int pullBatchSize = 64;
   /**
    * Minimum consumer thread number
    */
@@ -58,7 +58,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Message pull Interval
    */
-  private long pullInterval = 500;
+  private long pullInterval = 20;
   /**
    * Batch consumption size
    */
@@ -72,7 +72,7 @@ public class DefaultPullConsumerImpl {
    */
   private long suspendCurrentQueueTimeMillis = 1000;
 
-  private static final long PIPER_SUSPEND_MAX_TIME_MILLIS = 1000 * 30;
+  private static final long PIPER_SUSPEND_MAX_TIME_MILLIS = 1000 * 10;
   private final long consumerStartTimestamp = SystemClock.now();
   private PiperClientInstance piperClientInstance;
   private long flowControlTimes1 = 0;
@@ -101,7 +101,7 @@ public class DefaultPullConsumerImpl {
     int size = processQueue.getMsgCount().get();
     if (size > pullThresholdForQueue) {
       this.piperClientInstance.getPullMessageService().executePullRequestLater(pullRequest, PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL);
-      if ((flowControlTimes1++ % 1000) == 0) {
+      if ((flowControlTimes1++ % 200) == 0) {
         log.warn(String.format("the consumer message buffer is full, so do flow control, minoffset=%d, maxOffset=%d, size=%d, " +
                 " pullRequest=%s, flowControlTimes=%d", processQueue.getCommandTreeMap().firstKey(), processQueue.getCommandTreeMap().lastKey(),
                 processQueue.getMaxSpan(), pullRequest, flowControlTimes1));
@@ -111,18 +111,21 @@ public class DefaultPullConsumerImpl {
 
     if (processQueue.getMaxSpan() > consumeConcurrentlyMaxSpan) {
       this.piperClientInstance.getPullMessageService().executePullRequestLater(pullRequest, PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL);
-      if ((flowControlTimes2++ % 1000) == 0) {
-        log.warn(String.format("the consumer message span too long, so do flow control, minoffset=%d, maxOffset=%d, size=%d, " +
-                        " pullRequest=%s, flowControlTimes=%d", processQueue.getCommandTreeMap().firstKey(), processQueue.getCommandTreeMap().lastKey(),
-                processQueue.getMaxSpan(), pullRequest, flowControlTimes1));
+      if ((flowControlTimes2++ % 200) == 0) {
+        log.warn(String.format("the consumer message span too long, so do flow control, " +
+                        "minoffset=%d, maxOffset=%d, size=%d, " +
+                        "pullRequest=%s, flowControlTimes=%d",
+                processQueue.getCommandTreeMap().firstKey(), processQueue.getCommandTreeMap().lastKey(),
+                processQueue.getMaxSpan(), pullRequest, flowControlTimes2));
       }
+      return;
     }
 
     final long beginTimestamp = SystemClock.now();
     PullCallback pullCallback = new PullCallback() {
 
       @Override
-      public void OnSuccess(PullResult pullResult) {
+      public void onSuccess(PullResult pullResult) {
         if (pullResult != null) {
           pullResult = DefaultPullConsumerImpl.this.pullAPIWrapper.processPullResult(pullResult);
           log.info("pullRequest:" + pullRequest + " ,PullResult:" + pullResult);
@@ -143,6 +146,7 @@ public class DefaultPullConsumerImpl {
                 DefaultPullConsumerImpl.this.getConsumerStatsManager().incPullTPS(targetLocation, pullResult.getCmdFoundList().size());
 
                 boolean dispatchConsume = pullRequest.getProcessQueue().putCommand(pullResult.getCmdFoundList());
+                log.info("dispatchConsume:" + dispatchConsume);
                 DefaultPullConsumerImpl.this.commandOrderlyService.submitConsumeRequest(pullResult.getCmdFoundList(), pullRequest.getProcessQueue(), dispatchConsume);
                 pullRequest.setCommitOffset(offsetManager.getOffset(targetLocation));
                 if (DefaultPullConsumerImpl.this.pullInterval > 0) {
@@ -172,7 +176,7 @@ public class DefaultPullConsumerImpl {
 
       @Override
       public void onException(Throwable e, RequestExceptionReason reason) {
-        log.warn("execute the pull requesst exception", e);
+        log.warn("execute the pull requesst exception, reason:" + reason, e);
         if (reason == RequestExceptionReason.TIME_OUT) {
           DefaultPullConsumerImpl.this.piperClientInstance.getPullMessageService().executePullRequestLater(pullRequest, PULL_TIME_DELAY_MILLS_WHEN_TIMEOUT);
         } else {

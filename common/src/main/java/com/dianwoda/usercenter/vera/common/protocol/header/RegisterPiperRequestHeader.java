@@ -34,7 +34,8 @@ public class RegisterPiperRequestHeader implements CommandCustomHeader {
   private String haServerAddr;
   @CFNotNull
   private Integer piperId;
-
+  @CFNotNull
+  private String hostName;
   @CFNotNull
   private String group;
 
@@ -74,4 +75,11 @@ public class RegisterPiperRequestHeader implements CommandCustomHeader {
     this.group = group;
   }
 
+  public String getHostName() {
+    return hostName;
+  }
+
+  public void setHostName(String hostName) {
+    this.hostName = hostName;
+  }
 }

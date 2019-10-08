@@ -34,10 +34,18 @@ public class RedisWriter {
 
     if (this.interceptor.interceptor(command) != null) {
       this.redic.write(command);
-      log.warn("Write Command: " + command + " success!");
+      try {
+        log.info("Write Command: " + command + " success!");
+      } catch (Exception e) {
+        log.error("out put error!", e);
+      }
       return true;
     } else {
-      log.warn("Command: " + command + " is filtered!");
+      try {
+        log.warn("Command: " + command + " is filtered!");
+      } catch (Exception e) {
+        log.error("out put error!", e);
+      }
       return false;
     }
   }

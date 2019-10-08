@@ -2,6 +2,7 @@ package com.dianwoda.usercenter.vera.store;
 
 import com.dianwoda.usercenter.vera.common.SystemClock;
 import com.dianwoda.usercenter.vera.common.UtilAll;
+import com.dianwoda.usercenter.vera.common.protocol.Common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +127,7 @@ public class BlockFile extends ReferenceResource {
         totalSize = byteBuffer.getInt();
         // 2 magic code
         int magicCode = byteBuffer.getInt();
-        if (magicCode != DefaultCommandStore.MESSAGE_MAGIC_CODE) {
+        if (magicCode != Common.MESSAGE_MAGIC_CODE) {
           return null;
         }
         // 3 crc
@@ -144,7 +145,11 @@ public class BlockFile extends ReferenceResource {
         for (int i = 0; i < dataLength; i++) {
           dataBuffer.put(byteBuffer.get(i));
         }
-        log.info("file name:" + this.getFileName() + " Content:" + new String(dataBuffer.array()) + " offset:" + offset + " datalen:" + dataLength + " totalSize:" + totalSize + " canreadposition:" + readPosition);
+        // debug
+        String data = new String(dataBuffer.array());
+        log.info("file name:" + this.getFileName() + " Content:" +
+                data.substring(0, Math.min(data.length(), 100)) + " offset:" + offset +
+                " datalen:" + dataLength + " totalSize:" + totalSize + " canreadposition:" + readPosition);
         // data for test end
         return new SelectMappedBufferResult(transferBuffer, offset, totalSize, this);
 
@@ -181,18 +186,22 @@ public class BlockFile extends ReferenceResource {
 
   public int flush(final int flushLeastPages) {
     if (isAbleToFlush(flushLeastPages)) {
-      int value = this.wrotePosition.get();
-
-      try {
-        this.fileChannel.force(false);
-      } catch (IOException e) {
-        e.printStackTrace();
-        log.error("Error occurred when force data to disk.", e);
+      if (this.hold()) {
+        int value = this.wrotePosition.get();
+        try {
+          this.mappedByteBuffer.force();
+        } catch (Exception e) {
+          log.error("Error occurred when force data to disk.", e);
+        }
+        int oldFlushPosition = this.flushedPosition.get();
+        this.flushedPosition.set(value);
+        log.info("block file :" + this.getFileName() + " flush successly, old flush position:" + oldFlushPosition +
+                " new flush position:" + this.flushedPosition.get());
+        this.release();
+      } else {
+        log.warn("in flush, hold failed, flush offset = " + this.flushedPosition.get());
+        this.flushedPosition.set(getReadPosition());
       }
-      int oldFlushPosition = this.flushedPosition.get();
-      this.flushedPosition.set(value);
-      log.info("block file :" + this.getFileName() + " flush successly, old flush position:" + oldFlushPosition +
-          " new flush position:" + this.flushedPosition.get());
     }
 
     return getFlushPosition();

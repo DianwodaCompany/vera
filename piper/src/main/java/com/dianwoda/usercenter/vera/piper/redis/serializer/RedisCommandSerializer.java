@@ -105,8 +105,8 @@ public class RedisCommandSerializer implements ObjectSerializer<RedisCommand> {
             }
         }
 
-        byteBuffer.putInt(commandSword.getEx());
-        byteBuffer.putLong(commandSword.getPx());
+        byteBuffer.putLong(commandSword.getExpiredValue());
+        byteBuffer.putInt(commandSword.getExpiredType());
 
         return byteBuffer.array();
     }

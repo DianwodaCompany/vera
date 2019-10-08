@@ -8,7 +8,7 @@ import com.dianwoda.usercenter.vera.piper.enums.RequestExceptionReason;
  */
 public interface PullCallback {
 
-  void OnSuccess(final PullResult pullResult);
+  void onSuccess(final PullResult pullResult);
 
   void onException(final Throwable e, RequestExceptionReason reason);
 }
