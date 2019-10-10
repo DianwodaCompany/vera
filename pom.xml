@@ -94,6 +94,57 @@
 				</plugins>
 				</pluginManagement>
 			</build>
+
+
+			<repositories>
+                <repository>
+                    <id>Local Releases Repository</id>
+                    <name>Local Releases Repository</name>
+                    <url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>Local Snapshots Repository</id>
+                    <name>Local Snapshots Repository</name>
+                    <url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+			</repositories>
+
+			<pluginRepositories>
+                <pluginRepository>
+                    <id>Local Plugin Releases Repository</id>
+                    <name>Local Plugin Releases Repository</name>
+                    <url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>Local Plugin Snapshots Repository</id>
+                    <name>Local Plugin Snapshots Repository</name>
+                    <url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+			</pluginRepositories>
 		</profile>
 	</profiles>
 
@@ -123,12 +174,12 @@
 		<repository>
 			<id>Releases</id>
 			<name>Local Nexus Repository</name>
-			<url>http://192.168.1.177:8081/nexus/content/repositories/releases</url>
+			<url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>Snapshots</id>
 			<name>Local Nexus Repository</name>
-			<url>http://192.168.1.177:8081/nexus/content/repositories/snapshots</url>
+			<url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
