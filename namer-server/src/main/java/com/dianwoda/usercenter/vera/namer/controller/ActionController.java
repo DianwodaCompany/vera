@@ -1,6 +1,5 @@
 package com.dianwoda.usercenter.vera.namer.controller;
-
-import com.dianwoba.common.basic.Pagination;
+import com.dianwoda.usercenter.vera.common.Pagination;
 import com.dianwoda.usercenter.vera.namer.dto.Action;
 import com.dianwoda.usercenter.vera.namer.dto.ActionInfoDTO;
 import com.dianwoda.usercenter.vera.namer.routeinfo.ActionManager;

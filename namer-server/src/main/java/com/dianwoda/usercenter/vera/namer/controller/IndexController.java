@@ -1,6 +1,6 @@
 package com.dianwoda.usercenter.vera.namer.controller;
 
-import com.dianwoba.common.basic.Pagination;
+import com.dianwoda.usercenter.vera.common.Pagination;
 import com.dianwoda.usercenter.vera.common.protocol.ResponseCode;
 import com.dianwoda.usercenter.vera.common.protocol.hearbeat.PiperTaskData;
 import com.dianwoda.usercenter.vera.common.protocol.route.PiperData;
