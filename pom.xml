@@ -34,118 +34,143 @@
 		</developer>
 	</developers>
 
-	<profiles>
-		<profile>
-            <id>travis</id>
-			<build>
-				<pluginManagement>
-				<plugins>
-					<!-- Source -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>2.2.1</version>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>jar-no-fork</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<!-- Javadoc -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.9.1</version>
-						<configuration>
-							<show>private</show>
-							<nohelp>true</nohelp>
-							<charset>UTF-8</charset>
-							<encoding>UTF-8</encoding>
-							<docencoding>UTF-8</docencoding>
-							<additionalparam>-Xdoclint:none</additionalparam>  <!-- TODO 临时解决不规范的javadoc生成报错,后面要规范化后把这行去掉 -->
-						</configuration>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<!-- GPG -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.5</version>
-						<executions>
-							<execution>
-								<phase>
-								verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-				</pluginManagement>
-			</build>
-            
-			<repositories>
-                <repository>
-                    <id>Local Releases Repository</id>
-                    <name>Local Releases Repository</name>
-                    <url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>Local Snapshots Repository</id>
-                    <name>Local Snapshots Repository</name>
-                    <url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>
-                    <releases>
-                        <enabled>false</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-			</repositories>
+	<!--<profiles>-->
+		<!--<profile>-->
+            <!--<id>travis</id>-->
+			<!--<build>-->
+				<!--<pluginManagement>-->
+				<!--<plugins>-->
+					<!--&lt;!&ndash; Source &ndash;&gt;-->
+					<!--<plugin>-->
+						<!--<groupId>org.apache.maven.plugins</groupId>-->
+						<!--<artifactId>maven-source-plugin</artifactId>-->
+						<!--<version>2.2.1</version>-->
+						<!--<executions>-->
+							<!--<execution>-->
+								<!--<phase>package</phase>-->
+								<!--<goals>-->
+									<!--<goal>jar-no-fork</goal>-->
+								<!--</goals>-->
+							<!--</execution>-->
+						<!--</executions>-->
+					<!--</plugin>-->
+					<!--&lt;!&ndash; Javadoc &ndash;&gt;-->
+					<!--<plugin>-->
+						<!--<groupId>org.apache.maven.plugins</groupId>-->
+						<!--<artifactId>maven-javadoc-plugin</artifactId>-->
+						<!--<version>2.9.1</version>-->
+						<!--<configuration>-->
+							<!--<show>private</show>-->
+							<!--<nohelp>true</nohelp>-->
+							<!--<charset>UTF-8</charset>-->
+							<!--<encoding>UTF-8</encoding>-->
+							<!--<docencoding>UTF-8</docencoding>-->
+							<!--<additionalparam>-Xdoclint:none</additionalparam>  &lt;!&ndash; TODO 临时解决不规范的javadoc生成报错,后面要规范化后把这行去掉 &ndash;&gt;-->
+						<!--</configuration>-->
+						<!--<executions>-->
+							<!--<execution>-->
+								<!--<phase>package</phase>-->
+								<!--<goals>-->
+									<!--<goal>jar</goal>-->
+								<!--</goals>-->
+							<!--</execution>-->
+						<!--</executions>-->
+					<!--</plugin>-->
+					<!--&lt;!&ndash; GPG &ndash;&gt;-->
+					<!--<plugin>-->
+						<!--<groupId>org.apache.maven.plugins</groupId>-->
+						<!--<artifactId>maven-gpg-plugin</artifactId>-->
+						<!--<version>1.5</version>-->
+						<!--<executions>-->
+							<!--<execution>-->
+								<!--<phase>-->
+								<!--verify</phase>-->
+								<!--<goals>-->
+									<!--<goal>sign</goal>-->
+								<!--</goals>-->
+							<!--</execution>-->
+						<!--</executions>-->
+					<!--</plugin>-->
+				<!--</plugins>-->
+				<!--</pluginManagement>-->
+			<!--</build>-->
 
-			<pluginRepositories>
-                <pluginRepository>
-                    <id>Local Plugin Releases Repository</id>
-                    <name>Local Plugin Releases Repository</name>
-                    <url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </pluginRepository>
-                <pluginRepository>
-                    <id>Local Plugin Snapshots Repository</id>
-                    <name>Local Plugin Snapshots Repository</name>
-                    <url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>
-                    <releases>
-                        <enabled>false</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </pluginRepository>
-			</pluginRepositories>
-		</profile>
-	</profiles>
+			<!--<repositories>-->
+                <!--<repository>-->
+                    <!--<id>Local Releases Repository</id>-->
+                    <!--<name>Local Releases Repository</name>-->
+                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>-->
+                    <!--<releases>-->
+                        <!--<enabled>true</enabled>-->
+                    <!--</releases>-->
+                    <!--<snapshots>-->
+                        <!--<enabled>false</enabled>-->
+                    <!--</snapshots>-->
+                <!--</repository>-->
+                <!--<repository>-->
+                    <!--<id>Local Snapshots Repository</id>-->
+                    <!--<name>Local Snapshots Repository</name>-->
+                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>-->
+                    <!--<releases>-->
+                        <!--<enabled>false</enabled>-->
+                    <!--</releases>-->
+                    <!--<snapshots>-->
+                        <!--<enabled>true</enabled>-->
+                    <!--</snapshots>-->
+                <!--</repository>-->
+			<!--</repositories>-->
+
+			<!--<pluginRepositories>-->
+                <!--<pluginRepository>-->
+                    <!--<id>Local Plugin Releases Repository</id>-->
+                    <!--<name>Local Plugin Releases Repository</name>-->
+                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>-->
+                    <!--<releases>-->
+                        <!--<enabled>true</enabled>-->
+                    <!--</releases>-->
+                    <!--<snapshots>-->
+                        <!--<enabled>false</enabled>-->
+                    <!--</snapshots>-->
+                <!--</pluginRepository>-->
+                <!--<pluginRepository>-->
+                    <!--<id>Local Plugin Snapshots Repository</id>-->
+                    <!--<name>Local Plugin Snapshots Repository</name>-->
+                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>-->
+                    <!--<releases>-->
+                        <!--<enabled>false</enabled>-->
+                    <!--</releases>-->
+                    <!--<snapshots>-->
+                        <!--<enabled>true</enabled>-->
+                    <!--</snapshots>-->
+                <!--</pluginRepository>-->
+			<!--</pluginRepositories>-->
+		<!--</profile>-->
+	<!--</profiles>-->
+
+    <repositories>
+        <repository>
+            <id>Local Releases Repository</id>
+            <name>Local Releases Repository</name>
+            <url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>Local Snapshots Repository</id>
+            <name>Local Snapshots Repository</name>
+            <url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 	<dependencies>
 		<dependency>
