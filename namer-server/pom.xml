@@ -100,7 +100,7 @@
 		<dependency>
 			<groupId>com.dianwoba.mservice-two</groupId>
 			<artifactId>common-basic</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 
         <dependency>
