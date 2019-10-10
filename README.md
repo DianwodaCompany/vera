@@ -1,6 +1,5 @@
-# vera 
-
-==============
+vera 
+================
 
 ### [master]
 [![Build Status](https://travis-ci.org/DianwodaCompany/vera.svg?branch=master)](https://travis-ci.org/DianwodaCompany/vera)
@@ -13,11 +12,14 @@
 - [系统详述](#系统详述)
     - [整体架构](#整体架构)
     - [Redis 多主数据同步问题](#redis-多主数据同步问题)
-    - [高可用](#高可用)
+    - [高可用&可运维](#高可用&可运维)
         - [Vera 系统高可用](#vera-系统高可用)
         - [Redis 自身高可用](#redis-自身高可用)
+        - [可运维](#可运维)
     - [测试数据](#测试数据)
         - [延时测试](#延时测试)
+- [Contribution](#Contribution)  
+- [To do list](#Todolist)  
 - [License](#license)
 
 <!-- /MarkdownTOC -->
@@ -36,17 +38,16 @@ Redis 在点我达内部得到了广泛的使用，根据运维数据统计，�
 整体架构图如下所示：  
 ![design](https://raw.github.com/DianwodaCompany/vera/master/doc/image/total.jpg)  
 
-- Console 用来提供用户界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
-- NamerServer 各Piper信息与各任务实现情况的集中维护，主要是通过Piper的心跳上报；
-- Piper 最主要的结点，主要功能如下：1) Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；2) 同步其它Piper的数据并写入本地Redis Master中； 所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis;
+-  Console 用来提供用户界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
+-  NamerServer 各Piper信息与各任务实现情况的集中维护，主要是通过Piper的心跳上报；
+-  Piper 最主要的结点，主要功能如下：1) Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；2) 同步其它Piper的数据并写入本地Redis Master中； 所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis;
 
 <a name="redis-多主数据同步问题"></a>
 ## Redis 多主数据同步问题
-多数据中心首先要解决的是数据同步问题，即数据如何从一个 DC 传输到另外一个 DC。我们决定采用伪 slave 的方案，即实现 Redis 协议，伪装成为 Redis slave，让 Redis master 推送数据至伪 slave。这个伪 slave的功能是在piper中实现，考虑到目前绝大多数公司都是采用Redis Sentinel架构来搭建Redis集群，所以Vera通过传入Sentinel集群和Redis Master名字来自动获取Redis Master的IP和端口，从页实现数据侦听功能，如下图所示：  
-![keepers](https://raw.github.com/DianwodaCompany/vera/master/doc/image/pipers.jpg)  
+多数据中心首先要解决的是数据同步问题，即数据如何从一个 DC 传输到另外一个 DC。我们决定采用伪 slave 的方案，即实现 Redis 协议，伪装成为 Redis slave，让 Redis master 推送数据至伪 slave。这个伪 slave的功能是在piper中实现，考虑到目前绝大多数公司都是采用Redis Sentinel架构来搭建Redis集群，所以Vera通过传入Sentinel集群和Redis Master名字来自动获取Redis Master的IP和端口，从而实现数据侦听功能，如下图所示：  
+![pipers](https://raw.github.com/DianwodaCompany/vera/master/doc/image/pipers.jpg)  
 
-使用 piper 带来的优势  
-
+### 使用 piper 带来的优势  
 - 减少 master 同步次数  
 如果异地机房 redis slave 直接连向 redis master，多个 slave 会导致 master 多次同步，而 piper可以将增量数据存储在本地，通过机房间的piper的数据同步，异地机房的piper写入异地机房的redis master, 利用redis自身的主从同步，redis slave再从master获取数据。
 - 网络异常时减少全量同步  
@@ -56,16 +57,29 @@ piper 将 Redis 日志数据缓存到磁盘，这样，可以缓存大量的日�
 - 安全性提升  
 多个机房之间的数据传输往往需要通过公网进行，这样数据的安全性变得极为重要，piper 之间的数据传输也可以加密 (暂未实现)，提升安全性。
 
-## 高可用
-<a name="Vear-系统高可用"></a>
-### Vera 系统高可用
+### piper增量同步
+piper之间的数据同步采用增量同步方式，假设piper A开始同步piper B的数据，有如下三种可以实现：
+- piperA仅piperB后面新进来的数据，忽略之前的历史数据；
+- piperA取出保存在本地piperB的同步offset, 接着这个offset继续同步；如果piperA之前很久未同步过piperB的数据，这种方式会导致会有很多历史数据同步过来，不推荐；
+- piperA取出保存在本地piperB的同步offset, 接着这个offset继续同步, 同时对同步过来的数据做处理，过滤一定时间间隔之外的数据；
+
+
+## 高可用&可运维
+<a name="Vera-系统高可用"></a>
+### Piper 系统高可用
 如果 Piper 挂掉，多数据中心之间的数据传输可能会中断，解决这个问题，Vera设计了两种解决方式：
 1) Piper 有主备两个节点，备节点实时从主节点复制数据，当主节点挂掉后，备节点会被提升为主节点，代替主节点进行服务(主备功能将在下一个版本实现)。
 2) 预启动一个Piper作为备用，操作后台，将挂断的Piper上面的职能迁移到该备用Piper上面，从而恢复数据同步；
 <a name="redis-自身高可用"></a>
 ### Redis 自身高可用
-Redis 也可能会挂，Redis 本身提供哨兵 (Sentinel) 机制保证集群的高可用。
+Redis 也可能会挂，Redis 本身提供哨兵 (Sentinel) 机制保证集群的高可用；
+### Vera 可运维
+各piper间的数据同步可能会因为网络中断、主机重启、redis sentinel迁移、pipe迁移等原因而中断同步，除了piper与redis本身的高可用，同时Vera还提供了运维手段。运维人员可以通过console界面进行操作，如果redis sentinel迁移了，可以重新配置新的redis sentinel,如果piper迁移，也可以重新配置新的piper同步；
+运维界面如下：
+![console](https://raw.github.com/DianwodaCompany/vera/master/doc/image/console-snapshot.png)  
 
+
+<a name="测试数据"></a>
 ## 测试数据
 <a name="延时测试"></a>
 ### 延时测试
@@ -76,6 +90,20 @@ Redis 也可能会挂，Redis 本身提供哨兵 (Sentinel) 机制保证集群�
 因为Piper间获取新增数据有两种方式: 1. Consumer定时向Provider请求数据，采用pull的方式；2. 为避免没数据时频繁的pull, Provider会hold该请求，如果这时有新增数据，会重启该请求,使得Consumer能在第一时间获取该数据；
 在点我达生产环境单个机房进行了测试，大部分情况基本上是在ms级别的范围内。但如果由于Provider hold请求，导致Consumer超时未得到响应，此时Consumer会等待一些时间重新pull, 默认是10秒。
 
+<a name="Contribution"></a>
+# Contribution
+Thanks for all the people who contributed to Vera !
+<a href="https://github.com/DianwodaCompany/vera/graphs/contributors">
+<br>
+<img class="avatar" src="https://avatars0.githubusercontent.com/u/7858413?s=96&amp;v=4" width="48" height="48" alt="@ainihong001">
+<img class="avatar" src="https://avatars2.githubusercontent.com/u/20179128?s=96&amp;v=4" width="48" height="48" alt="@yueyeliuxing">
+</a>
+
+<a name="Todolist"></a>
+# To do list
+  * piper实现主备功能, 防止piper挂掉能实时切换
+  * namer-server实现双主功能, 以防止单个namer挂掉造成影响
+  
 <a name="license"></a>
 # License
 The project is licensed under the [Apache 2 license](https://github.com/DianwodaCompany/vera/master/LICENSE).
