@@ -45,7 +45,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Batch pull size
    */
-  private int pullBatchSize = 64;
+  private int pullBatchSize = 50;
   /**
    * Minimum consumer thread number
    */

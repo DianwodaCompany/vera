@@ -31,6 +31,7 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
     if (commands == null || commands.isEmpty()) {
       return ConsumeOrderlyStatus.SUSPEND;
     }
+    
     try {
       for (CommandExt command : commands) {
         long storeTimeStamp = command.getStoreTimestamp();
@@ -45,8 +46,6 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
           RedisCommand redisCommand = deserializer.deserialize(command.getData());
           if (this.piperClientInstance.getPiperClientInterImpl().getRedisFacadeProcessor().write(redisCommand)) {
             log.info("Write into redis success, length {}", command.getDataLength());
-          } else {
-            log.error("Write into redis fail, redisCommand {}", redisCommand);
           }
         }
       }

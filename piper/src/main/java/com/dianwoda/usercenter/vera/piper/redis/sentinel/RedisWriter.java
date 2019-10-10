@@ -5,6 +5,8 @@ import com.dianwoda.usercenter.vera.piper.redis.CommandInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.RecursiveAction;
+
 /**
  * redis writer 封装
  * @author seam
@@ -42,7 +44,7 @@ public class RedisWriter {
       return true;
     } else {
       try {
-        log.warn("Command: " + command + " is filtered!");
+        log.info("Command: " + command + " is filtered!");
       } catch (Exception e) {
         log.error("out put error!", e);
       }
@@ -50,5 +52,11 @@ public class RedisWriter {
     }
   }
 
-
+  /**
+   * just for test
+   */
+  public boolean delete(RedisCommand command) throws Exception {
+    this.redic.delete(command);
+    return true;
+  }
 }

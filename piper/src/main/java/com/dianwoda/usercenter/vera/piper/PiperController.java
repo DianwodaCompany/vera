@@ -178,6 +178,8 @@ public class PiperController {
     return circleDisposeHandler;
   }
 
+
+
   public ConsumerOffsetManager getOffsetManager() {
     return offsetManager;
   }

@@ -102,7 +102,18 @@ public class Redic extends Jedis {
         this.hmset(command.getKey(), command.getFields());
         break;
       case LSET:
-        this.lset(command.getKey(), command.getIndex(), command.getValue());
+        this.lset(new String(command.getKey()), command.getIndex(), new String(command.getValue()));
+        break;
+      default:
+        break;
+    }
+  }
+
+  public void delete(RedisCommand command) throws Exception {
+    CommandType type = CommandType.toEnum(command.getType());
+    switch (type) {
+      case DEL:
+        this.del(command.getKey());
         break;
       default:
         break;
@@ -240,6 +251,15 @@ public class Redic extends Jedis {
   }
 
   @Override
+  public Long del(byte[] key) {
+    Jedis jedis = getWrite(key);
+    Long ret = jedis.del(key);
+    jedis.close();
+    return ret;
+  }
+
+
+  @Override
   public void close() {
 
     if (redicNodes != null) {
@@ -284,6 +304,8 @@ public class Redic extends Jedis {
     redic.set("test", "test_value");
     System.out.println(redic.get("test"));
 
+    redic.del("test".getBytes());
+    System.out.println(redic.get("test"));
     List<RedicNode> nodes = redic.getRedicNodes();
 
     while(true) {

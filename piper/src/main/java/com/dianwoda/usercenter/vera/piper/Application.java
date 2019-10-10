@@ -13,7 +13,7 @@ public class Application {
 
   public static void main(String[] args) {
     System.out.println("piper default starting");
-    new SpringApplicationBuilder(Application.class).profiles("dev-hz-unit1").build(args).run(args);
+    new SpringApplicationBuilder(Application.class).profiles("hz-unit1").build(args).run(args);
     System.out.println("piper default start success");
   }
 }

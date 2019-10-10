@@ -109,7 +109,7 @@ public class BlockFile extends ReferenceResource {
     }
   }
 
-  public SelectMappedBufferResult queryCommandNew(long offset) {
+  public SelectMappedBufferResult queryCommand(long offset) {
     int readPosition = getReadPosition();
     if (offset >= getFileFromOffset() + readPosition) {
       return null;
@@ -117,50 +117,113 @@ public class BlockFile extends ReferenceResource {
       return null;
     }
     int totalSize = 0;
-    if (this.hold()) {
-      try {
-        long newOffset = offset % this.fileSize;
-        ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
-        byteBuffer.position((int) newOffset);
-        ByteBuffer transferBuffer = byteBuffer.slice();
-        // 1 total size
-        totalSize = byteBuffer.getInt();
-        // 2 magic code
-        int magicCode = byteBuffer.getInt();
-        if (magicCode != Common.MESSAGE_MAGIC_CODE) {
-          return null;
-        }
-        // 3 crc
-        int crc = byteBuffer.getInt();
-        // 4 store timestamp
-        long storeTimestamp = byteBuffer.getLong();
-        // 5 logic offset
-        long logicOffset = byteBuffer.getLong();
-        // 6 store offset
-        long storeOffset = byteBuffer.getLong();
-        // 7 data for test
-        // 7 data length
-        int dataLength = byteBuffer.getInt();
-        ByteBuffer dataBuffer = ByteBuffer.allocate(dataLength);
-        for (int i = 0; i < dataLength; i++) {
-          dataBuffer.put(byteBuffer.get(i));
-        }
-        // debug
-        String data = new String(dataBuffer.array());
-        log.info("file name:" + this.getFileName() + " Content:" +
-                data.substring(0, Math.min(data.length(), 100)) + " offset:" + offset +
-                " datalen:" + dataLength + " totalSize:" + totalSize + " canreadposition:" + readPosition);
-        // data for test end
-        return new SelectMappedBufferResult(transferBuffer, offset, totalSize, this);
+    long newOffset = offset % this.fileSize;
+    try {
 
-      } catch (Exception e) {
-        log.error(String.format("Error occurred when Read offset in blockfile, name:%s, offset:%d, size:%d, canreadpoint:%d",
-                this.fileName, offset, totalSize, readPosition), e);
+      ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
+      byteBuffer.position((int) newOffset);
+      ByteBuffer transferBuffer = byteBuffer.slice();
+      // 1 total size
+      totalSize = byteBuffer.getInt();
+      // 2 magic code
+      int magicCode = byteBuffer.getInt();
+      if (magicCode != Common.MESSAGE_MAGIC_CODE) {
+        return null;
       }
-    } else {
-      log.warn("matched, but hold failed, request pos: " + offset + ", fileFromOffset: "
-              + this.fileFromOffset);
+      // 3 crc
+      int crc = byteBuffer.getInt();
+      // 4 store timestamp
+      long storeTimestamp = byteBuffer.getLong();
+      // 5 logic offset
+      long logicOffset = byteBuffer.getLong();
+      // 6 store offset
+      long storeOffset = byteBuffer.getLong();
+      // 7 data for test
+      // 7 data length
+      int dataLength = byteBuffer.getInt();
+      ByteBuffer dataBuffer = ByteBuffer.allocate(dataLength);
+      for (int i = 0; i < dataLength; i++) {
+        dataBuffer.put(byteBuffer.get(i));
+      }
+      // debug
+      String data = new String(dataBuffer.array());
+      log.info("file name:" + this.getFileName() + " Content:" +
+              data.substring(0, Math.min(data.length(), 100)) + " offset:" + offset +
+              " datalen:" + dataLength + " totalSize:" + totalSize + " canreadposition:" + readPosition);
+      // data for test end
+      if (this.hold()) {
+        return new SelectMappedBufferResult(transferBuffer, offset, totalSize, this);
+      } else {
+        log.warn("matched, but hold failed, request pos: " + offset + ", fileFromOffset: "
+                + this.fileFromOffset);
+      }
 
+    } catch (Exception e){
+      log.error(String.format("Error occurred when Read offset in blockfile, name:%s, offset:%d, size:%d, canreadpoint:%d",
+              this.fileName, offset, totalSize, readPosition), e);
+    }
+    return null;
+  }
+
+  public SelectMappedBufferResult queryCommand(long offset, int num) {
+
+    int relativeOffset = (int) (offset % this.fileSize);
+    ByteBuffer operBuffer = this.mappedByteBuffer.slice();
+    operBuffer.position(relativeOffset);
+    ByteBuffer dataBuffer = operBuffer.slice();
+
+    int sumSize = 0;
+    do {
+      int readPosition = getReadPosition();
+      if (relativeOffset >= readPosition) {
+        break;
+      } else if (relativeOffset > this.fileSize) {
+        break;
+      }
+
+      // 1 total size
+      int totalSize = operBuffer.getInt();
+      // 2 magic code
+      int magicCode = operBuffer.getInt();
+      if (magicCode != Common.MESSAGE_MAGIC_CODE) {
+        break;
+      }
+      // 3 crc
+      int crc = operBuffer.getInt();
+      // 4 store timestamp
+      long storeTimestamp = operBuffer.getLong();
+      // 5 logic offset
+      long logicOffset = operBuffer.getLong();
+      // 6 store offset
+      long storeOffset = operBuffer.getLong();
+      // 7 data for test
+      // 7 data length
+      int dataLength = operBuffer.getInt();
+      ByteBuffer tempBuffer = ByteBuffer.allocate(dataLength);
+      for (int i = 0; i < dataLength; i++) {
+        tempBuffer.put(operBuffer.get(i));
+      }
+      // 8 data
+      operBuffer.position(operBuffer.position() + dataLength);
+      // debug
+      String data = new String(tempBuffer.array());
+
+      relativeOffset += totalSize;
+      sumSize += totalSize;
+      log.info("file name:" + this.getFileName() + " Content:" +
+              data.substring(0, Math.min(data.length(), 100)) + " offset:" + offset +
+              " nowOffset:" + (this.getFileFromOffset() + relativeOffset) + " datalen:" + dataLength + " totalSize:" + totalSize +
+              " sumSize:" + sumSize + " readposition:" + readPosition);
+
+    } while (--num > 0);
+
+    if (sumSize > 0) {
+      if (this.hold()) {
+        return new SelectMappedBufferResult(dataBuffer, offset, sumSize, this);
+      } else {
+        log.warn("matched, but hold failed, request pos: " + offset + ", fileFromOffset: "
+                + this.fileFromOffset);
+      }
     }
     return null;
   }

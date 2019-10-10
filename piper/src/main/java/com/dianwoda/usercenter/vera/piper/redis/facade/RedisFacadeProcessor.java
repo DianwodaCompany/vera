@@ -105,9 +105,9 @@ public class RedisFacadeProcessor {
     if (this.redisWriter != null) {
       this.redisWriter.stop();
     }
-
-//    this.redic.shutdown();
   }
 
-
+  public RedisWriter getRedisWriter() {
+    return redisWriter;
+  }
 }

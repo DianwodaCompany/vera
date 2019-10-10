@@ -16,6 +16,7 @@ public enum CommandType {
     HSET(7),
     HMSET(8),
     LSET(9),
+    DEL(10),
     ;
 
     CommandType(int value) {

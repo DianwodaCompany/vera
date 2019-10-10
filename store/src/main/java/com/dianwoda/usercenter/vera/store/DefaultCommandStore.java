@@ -5,7 +5,6 @@ import com.dianwoda.usercenter.vera.common.CountDownLatch2;
 import com.dianwoda.usercenter.vera.common.SystemClock;
 import com.dianwoda.usercenter.vera.common.ThreadFactoryImpl;
 import com.dianwoda.usercenter.vera.common.UtilAll;
-import com.dianwoda.usercenter.vera.common.message.Command;
 import com.dianwoda.usercenter.vera.common.message.CommandDecoder;
 import com.dianwoda.usercenter.vera.common.message.GetCommandStatus;
 import com.dianwoda.usercenter.vera.common.protocol.Common;
@@ -32,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DefaultCommandStore implements CommandStore {
   protected static final Logger log = LoggerFactory.getLogger(DefaultCommandStore.class);
   public static int MAX_SIZE = 1024 * 1024 * 4;
-  private static int blockFileSize = 1024 * 1024 * 20; // 20M
+  public static int blockFileSize = 1024 * 1024 * 20; // 20M
   // Resource reclaim interval
   public static int cleanResourceInterval = 10000;
   public static int reserveResourceInterval = 1000 * 60 * 60 * 24 * 3; // 3天
@@ -203,7 +202,6 @@ public class DefaultCommandStore implements CommandStore {
             this.storeCheckpoint.getPhysicMsgTimestamp() > storeTimestamp) {
       return true;
     }
-
     return false;
   }
 
@@ -304,6 +302,68 @@ public class DefaultCommandStore implements CommandStore {
     return putCommandResult;
   }
 
+  @Deprecated
+  public GetCommandResult getCommandOld(String targetLocation, long offset, int msgNums) {
+    GetCommandStatus status = GetCommandStatus.NO_MESSAGE_IN_BLOCK;
+    GetCommandResult result = new GetCommandResult();
+    long nextBeginOffset = offset;
+
+    final long maxOffsetPy = blockFileQueue.getMaxOffset();
+    final long minOffsetPy = blockFileQueue.getMinOffset();
+    if (maxOffsetPy == 0) {
+      status = GetCommandStatus.NO_MESSAGE_IN_BLOCK;
+      nextBeginOffset = 0;
+    } else if (offset < minOffsetPy) {
+      status = GetCommandStatus.OFFSET_TOO_SMALL;
+      nextBeginOffset = minOffsetPy;
+    } else if (offset == maxOffsetPy) {
+      status = GetCommandStatus.OFFSET_OVERFLOW_ONE;
+      nextBeginOffset = offset;
+    } else if (offset > maxOffsetPy) {
+      status = GetCommandStatus.OFFSET_OVERFLOW_BADLY;
+      if (0 == minOffsetPy) {
+        nextBeginOffset = minOffsetPy;
+      } else {
+        nextBeginOffset = maxOffsetPy;
+      }
+    } else {
+      //
+      long newOffset = offset;
+      for(int i=0; i<msgNums; i++) {
+        BlockFile blockFile = blockFileQueue.findBlockFileByOffset(newOffset);
+        SelectMappedBufferResult selectMappedBufferResult = blockFile == null ? null : blockFile.queryCommand(newOffset);
+        if(selectMappedBufferResult != null) {
+          try {
+            status = GetCommandStatus.FOUND;
+            int totalSize = selectMappedBufferResult.getSize();
+            selectMappedBufferResult.getByteBuffer().limit(totalSize);
+            result.addCommand(selectMappedBufferResult);
+            newOffset += selectMappedBufferResult.getSize();
+            nextBeginOffset = newOffset;
+            log.info("oldOffset:" + offset + " nextBeginOffset:" + nextBeginOffset + " status:" + status.name());
+          } finally {
+            selectMappedBufferResult.release();
+          }
+        } else {
+          if (result.getBufferTotalSize() == 0) {
+            status = GetCommandStatus.OFFSET_FOUND_NULL;
+            nextBeginOffset = rollNextFile(newOffset);
+          }
+          break;
+        }
+      }
+      // maxOffsetPy maybe less than nextBeginOffset, need fix
+      long fallBehind = maxOffsetPy - nextBeginOffset;
+      this.piperStatsManager.recordDiskFallBehindSize(targetLocation, fallBehind);
+
+    }
+    result.setNextBeginOffset(nextBeginOffset);
+    result.setMinOffset(minOffsetPy);
+    result.setMaxOffset(maxOffsetPy);
+    result.setStatus(status);
+    return result;
+  }
+
   @Override
   public GetCommandResult getCommand(String targetLocation, long offset, int msgNums) {
     GetCommandStatus status = GetCommandStatus.NO_MESSAGE_IN_BLOCK;
@@ -329,34 +389,30 @@ public class DefaultCommandStore implements CommandStore {
         nextBeginOffset = maxOffsetPy;
       }
     } else {
-      // to do optimize
-      long newOffset = offset;
-      for(int i=0; i<msgNums; i++) {
-        BlockFile blockFile = blockFileQueue.findBlockFileByOffset(newOffset);
-        SelectMappedBufferResult selectMappedBufferResult = blockFile.queryCommandNew(newOffset);
-        if(selectMappedBufferResult != null) {
-          try {
-            status = GetCommandStatus.FOUND;
-            int totalSize = selectMappedBufferResult.getSize();
-            selectMappedBufferResult.getByteBuffer().limit(totalSize);
-            result.addCommand(selectMappedBufferResult);
-            newOffset += selectMappedBufferResult.getSize();
-            nextBeginOffset = newOffset;
-            log.info("oldOffset:" + offset + " nextBeginOffset:" + nextBeginOffset + " status:" + status.name());
-          } finally {
-            selectMappedBufferResult.release();
-          }
-        } else {
+      //
+      BlockFile blockFile = blockFileQueue.findBlockFileByOffset(nextBeginOffset);
+      SelectMappedBufferResult selectMappedBufferResult = blockFile.queryCommand(nextBeginOffset, msgNums);
+      if(selectMappedBufferResult != null) {
+        try {
+          status = GetCommandStatus.FOUND;
+          int totalSize = selectMappedBufferResult.getSize();
+          selectMappedBufferResult.getByteBuffer().limit(totalSize);
+          result.addCommand(selectMappedBufferResult);
+          nextBeginOffset += totalSize;
+          log.info("oldOffset:" + offset + " nextBeginOffset:" + nextBeginOffset + " status:" + status.name());
+        } finally {
+          selectMappedBufferResult.release();
+        }
+      } else {
+        // 加载下一个block file
         if (result.getBufferTotalSize() == 0) {
           status = GetCommandStatus.OFFSET_FOUND_NULL;
-          nextBeginOffset = rollNextFile(newOffset);
-        }
-        break;
+          nextBeginOffset = rollNextFile(nextBeginOffset);
         }
       }
+      // maxOffsetPy maybe less than nextBeginOffset, need fix
       long fallBehind = maxOffsetPy - nextBeginOffset;
       this.piperStatsManager.recordDiskFallBehindSize(targetLocation, fallBehind);
-
     }
     result.setNextBeginOffset(nextBeginOffset);
     result.setMinOffset(minOffsetPy);

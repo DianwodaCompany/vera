@@ -88,7 +88,7 @@
         <dependency>
             <groupId>com.moilioncircle</groupId>
             <artifactId>redis-replicator</artifactId>
-            <version>3.0.0-RC3</version>
+            <version>3.3.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>
