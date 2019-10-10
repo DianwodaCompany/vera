@@ -173,7 +173,7 @@
         <repository>
             <id>Local Snapshots Repository2</id>
             <name>Local Snapshots Repository2</name>
-            <url>http://nexus.nidianwo.com/nexus/service/local/repositories/snapshots</url>
+            <url>http://nexus.nidianwo.com/nexus/service/local/repositories/snapshots/content</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
