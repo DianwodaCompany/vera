@@ -20,7 +20,7 @@
     - [测试数据](#测试数据)
         - [延时测试](#延时测试)
 - [Contribution](#Contribution)  
-- [To do list](#To do list)  
+- [To do list](#Todolist)  
 - [License](#license)
 
 <!-- /MarkdownTOC -->
@@ -100,7 +100,7 @@ Thanks for all the people who contributed to Vera !
 <img class="avatar" src="https://avatars2.githubusercontent.com/u/20179128?s=96&amp;v=4" width="48" height="48" alt="@yueyeliuxing">
 </a>
 
-<a name="To do list"></a>
+<a name="Todolist"></a>
 # To do list
   * piper实现主备功能, 防止piper挂掉能实时切换
   * namer-server实现双主功能, 以防止单个namer挂掉造成影响
