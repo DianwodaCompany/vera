@@ -1,45 +1,30 @@
 language: java
 jdk:
-  - oraclejdk8
-dist:
-  trusty
+- oraclejdk8
+dist: trusty
 cache:
   directories:
-      - $HOME/.m2
+  - "$HOME/.m2"
 notification:
   email:
     recipients:
-      -  huangfeihong@dianwoda.com
+    - huangfeihong@dianwoda.com
     on_success: always
     on_failure: always
-
-before_script:
-
-before_install:
-
-script:
-    echo "skip test...."
-
+before_script: 
+before_install: 
+script: echo "skip test...."
 after_success:
   - mvn -Dlog.console.close=true  clean
-  #generate-resources cobertura:cobertura coveralls:report
+    ## 生成测试报告
+  - mvn jacoco:report
+  ## 获取travis解密的token ,并调用coveralls-plugin上传报告
+  - mvn coveralls:report -DrepoToken="${COVERALLS_TOKEN}"
 
 branches:
   only:
-    - master
-
+  - master
 env:
   global:
-   - secure: "KOhrQsXdICiOGVM6sGkhY5BZel/L5USfRgi6M/pAY15LVNffve/IP75eTFTFmdX0OimpKyzZUYgyadSjRe7RfIatGdA8B5nRZ2Qy9Qe31whDAjtHByIALb2XmUERHIVbv/5oG4dlQb83d7+ptGnGbzcXCyBg+1ki6GvMW95Tz0DoTEfFIfTRK0Odkqmsqe5tJyQT2Z48WT/U7mwS/K4uxPj/vV3cqqyoVJXwGWwz7t/cedGSbBLSLRpjo0A0SAE75WrBHwAJBSarEhhUgwAGzENmAAGNGF9U7RMf/QE5HjI4pGr7B8uLoJsKhEvXCiOGtOWlRIGg8X8u91VC/M7XqVGA4f1ibpUAOeoqiaEJ22CsRtP3Q6ZbtJkm8O3iw9PHV8D7QWVZxjOTibwuwuLYluSAlyRMgg86M1GD1fjQyH+CC0YmU56Oj2PQei0WNAaipGWreKii9cKFkUc5mPSFuEw5SECrvndeFuzYxNYQIawpEMCeYWihNdTRpykvcU6CPKqx/H/hh/bfQZG7GM2ieRbVDbB67tuBhQwkCihXCPTWKEGUyrkqvlcYePCTQFFXeWLD1weGOHVZCOrDp42Ds1yDqn6yc1A2tmKId/TMi+0xncv0iPKtD1i+caddMFKC2Ua4ZnEBqlKoIjUp/Yi9rtbdLGj9AT4xcJW+17bE3Y8="
-   - "MAVEN_OPTS=-Xmx2g"
-
-#addons:
-#  coverity_scan:
-#    project:
-#      name: "DianwodaCompany/vera"
-#      description: "Build submitted via Travis CI"
-#    notification_email:  huangfeihong@dianwoda.com
-#    build_command_prepend: "mvn clean"
-#    build_command:   "mvn -DskipTests=true compile"
-#    branch_pattern: master
-
+  - MAVEN_OPTS=-Xmx2g
+  - secure: agPyPjllAYNQjUH9GMtKWEHWEsdBQjETv9Q/8y6YT/ksPi3bwexgWbxkxxDv1MyUrOIq4S1SAGQ/38LuRblyX27AGaOjDFRbtMGACJR9P3mLOzi8seVAn1tdylUDnnMkh/n3xtwjZyHu5kovWmjodt7rhIEw7hVDsvIvv6glustR30+pwipb/4UJvdBGl+tj9ASJyWX5stWLm/C82ahYWiGUOytnD+0TIwmtgJjjKIm9uLULpDU4ULhgyz7eM6QAHGAz49Wn96ZE9qf5667EPIoW1XHoOfYVlrFpT+pnAPtbRrw5MdWYAQYnrPNrkNEy7LpuQZ8n5drkvwROP+hGBS1h9szkcYhpAgMC0ToKtrPA13qzVlZa4Niti6g48bd9TrA1M+11xYfBdTXbKRlvDnwgwrlDqfKxjfhfd6pMbx1SA+hrmXEq7q1skxIA+R2nvA3mYccITlYTX+MHHasAZN5dcDepFjtM7ZZs7E6VZrZgsHfu3wTD8kSdKU4ivBMNBHnw6n4nhZpyDxHyDnC/9T1+Soqb5qRYB0qujtvnuhic5yaqocb9JsrLh9K5iqTV9nDofzq95yDETjzct851wSepLOSkQ+2AgKdrmXG6HHGv4mm6KFtdBZVR4Md3SCgImsi8CLivs3C2bGRMA1Uyh5nJp4kmEafyT1qiJQcgr2o=
