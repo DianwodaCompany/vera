@@ -28,3 +28,14 @@ env:
   global:
   - MAVEN_OPTS=-Xmx2g
   - secure: agPyPjllAYNQjUH9GMtKWEHWEsdBQjETv9Q/8y6YT/ksPi3bwexgWbxkxxDv1MyUrOIq4S1SAGQ/38LuRblyX27AGaOjDFRbtMGACJR9P3mLOzi8seVAn1tdylUDnnMkh/n3xtwjZyHu5kovWmjodt7rhIEw7hVDsvIvv6glustR30+pwipb/4UJvdBGl+tj9ASJyWX5stWLm/C82ahYWiGUOytnD+0TIwmtgJjjKIm9uLULpDU4ULhgyz7eM6QAHGAz49Wn96ZE9qf5667EPIoW1XHoOfYVlrFpT+pnAPtbRrw5MdWYAQYnrPNrkNEy7LpuQZ8n5drkvwROP+hGBS1h9szkcYhpAgMC0ToKtrPA13qzVlZa4Niti6g48bd9TrA1M+11xYfBdTXbKRlvDnwgwrlDqfKxjfhfd6pMbx1SA+hrmXEq7q1skxIA+R2nvA3mYccITlYTX+MHHasAZN5dcDepFjtM7ZZs7E6VZrZgsHfu3wTD8kSdKU4ivBMNBHnw6n4nhZpyDxHyDnC/9T1+Soqb5qRYB0qujtvnuhic5yaqocb9JsrLh9K5iqTV9nDofzq95yDETjzct851wSepLOSkQ+2AgKdrmXG6HHGv4mm6KFtdBZVR4Md3SCgImsi8CLivs3C2bGRMA1Uyh5nJp4kmEafyT1qiJQcgr2o=
+
+
+addons:
+  coverity_scan:
+    project:
+      name: "DianwodaCompany/vera"
+      description: "Build submitted via Travis CI"
+    notification_email:  huangfeihong@dianwoda.com
+    build_command_prepend: "mvn clean"
+    build_command:   "mvn -DskipTests=true compile"
+    branch_pattern: master
