@@ -4,12 +4,51 @@
 
 	<groupId>com.dianwoda.usercenter.vera</groupId>
 	<artifactId>vera</artifactId>
-	<packaging>pom</packaging>
-	<name>vera</name>
     <version>0.0.1-SNAPSHOT</version>
-	<description>Vera Driver Library</description>
-	<url>https://github.com/DianwodaCompany/vera</url>
+	<packaging>pom</packaging>
 
+	<name>vera</name>
+	<url>https://github.com/DianwodaCompany/vera</url>
+    <description>synchronization redis data between data centers</description>
+
+    <organization>
+        <name>Dianwoda, Inc.</name>
+        <url>http://www.dianwoda.com</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/DianwodaCompany/vera/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>Travis CI</system>
+        <url>https://travis-ci.org/DianwodaCompany/vera</url>
+    </ciManagement>
+
+    <inceptionYear>2019</inceptionYear>
+
+    <scm>
+        <connection>scm:git:https://github.com/DianwodaCompany/vera.git</connection>
+        <developerConnection>scm:git:git@github.com:DianwodaCompany/vera.git</developerConnection>
+        <url>https://github.com/DianwodaCompany/vera</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>Vera</id>
+            <name>Vera</name>
+            <url>https://github.com/DianwodaCompany/vera</url>
+            <email>huangfeihong@dianwoda.com</email>
+        </developer>
+    </developers>
 
     <modules>
 		<module>piper</module>
@@ -19,133 +58,51 @@
 		<module>store</module>
 	</modules>
 
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-		</license>
-	</licenses>
-	<developers>
-		<developer>
-			<id>Vera</id>
-			<name>Vera</name>
-			<url>https://github.com/DianwodaCompany/vera</url>
-            <email>huangfeihong@dianwoda.com</email>
-		</developer>
-	</developers>
 
-	<!--<profiles>-->
-		<!--<profile>-->
-            <!--<id>travis</id>-->
-			<!--<build>-->
-				<!--<pluginManagement>-->
-				<!--<plugins>-->
-					<!--&lt;!&ndash; Source &ndash;&gt;-->
-					<!--<plugin>-->
-						<!--<groupId>org.apache.maven.plugins</groupId>-->
-						<!--<artifactId>maven-source-plugin</artifactId>-->
-						<!--<version>2.2.1</version>-->
-						<!--<executions>-->
-							<!--<execution>-->
-								<!--<phase>package</phase>-->
-								<!--<goals>-->
-									<!--<goal>jar-no-fork</goal>-->
-								<!--</goals>-->
-							<!--</execution>-->
-						<!--</executions>-->
-					<!--</plugin>-->
-					<!--&lt;!&ndash; Javadoc &ndash;&gt;-->
-					<!--<plugin>-->
-						<!--<groupId>org.apache.maven.plugins</groupId>-->
-						<!--<artifactId>maven-javadoc-plugin</artifactId>-->
-						<!--<version>2.9.1</version>-->
-						<!--<configuration>-->
-							<!--<show>private</show>-->
-							<!--<nohelp>true</nohelp>-->
-							<!--<charset>UTF-8</charset>-->
-							<!--<encoding>UTF-8</encoding>-->
-							<!--<docencoding>UTF-8</docencoding>-->
-							<!--<additionalparam>-Xdoclint:none</additionalparam>  &lt;!&ndash; TODO 临时解决不规范的javadoc生成报错,后面要规范化后把这行去掉 &ndash;&gt;-->
-						<!--</configuration>-->
-						<!--<executions>-->
-							<!--<execution>-->
-								<!--<phase>package</phase>-->
-								<!--<goals>-->
-									<!--<goal>jar</goal>-->
-								<!--</goals>-->
-							<!--</execution>-->
-						<!--</executions>-->
-					<!--</plugin>-->
-					<!--&lt;!&ndash; GPG &ndash;&gt;-->
-					<!--<plugin>-->
-						<!--<groupId>org.apache.maven.plugins</groupId>-->
-						<!--<artifactId>maven-gpg-plugin</artifactId>-->
-						<!--<version>1.5</version>-->
-						<!--<executions>-->
-							<!--<execution>-->
-								<!--<phase>-->
-								<!--verify</phase>-->
-								<!--<goals>-->
-									<!--<goal>sign</goal>-->
-								<!--</goals>-->
-							<!--</execution>-->
-						<!--</executions>-->
-					<!--</plugin>-->
-				<!--</plugins>-->
-				<!--</pluginManagement>-->
-			<!--</build>-->
-
-			<!--<repositories>-->
-                <!--<repository>-->
-                    <!--<id>Local Releases Repository</id>-->
-                    <!--<name>Local Releases Repository</name>-->
-                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>-->
-                    <!--<releases>-->
-                        <!--<enabled>true</enabled>-->
-                    <!--</releases>-->
-                    <!--<snapshots>-->
-                        <!--<enabled>false</enabled>-->
-                    <!--</snapshots>-->
-                <!--</repository>-->
-                <!--<repository>-->
-                    <!--<id>Local Snapshots Repository</id>-->
-                    <!--<name>Local Snapshots Repository</name>-->
-                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>-->
-                    <!--<releases>-->
-                        <!--<enabled>false</enabled>-->
-                    <!--</releases>-->
-                    <!--<snapshots>-->
-                        <!--<enabled>true</enabled>-->
-                    <!--</snapshots>-->
-                <!--</repository>-->
-			<!--</repositories>-->
-
-			<!--<pluginRepositories>-->
-                <!--<pluginRepository>-->
-                    <!--<id>Local Plugin Releases Repository</id>-->
-                    <!--<name>Local Plugin Releases Repository</name>-->
-                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>-->
-                    <!--<releases>-->
-                        <!--<enabled>true</enabled>-->
-                    <!--</releases>-->
-                    <!--<snapshots>-->
-                        <!--<enabled>false</enabled>-->
-                    <!--</snapshots>-->
-                <!--</pluginRepository>-->
-                <!--<pluginRepository>-->
-                    <!--<id>Local Plugin Snapshots Repository</id>-->
-                    <!--<name>Local Plugin Snapshots Repository</name>-->
-                    <!--<url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>-->
-                    <!--<releases>-->
-                        <!--<enabled>false</enabled>-->
-                    <!--</releases>-->
-                    <!--<snapshots>-->
-                        <!--<enabled>true</enabled>-->
-                    <!--</snapshots>-->
-                <!--</pluginRepository>-->
-			<!--</pluginRepositories>-->
-		<!--</profile>-->
-	<!--</profiles>-->
+    <profiles>
+    <profile>
+        <!-- for travis usage -->
+        <id>travis</id>
+        <activation>
+            <property>
+                <name>env.TRAVIS</name>
+                <value>true</value>
+            </property>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.3</version>
+                    <executions>
+                        <execution>
+                            <id>prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.eluder.coveralls</groupId>
+                    <artifactId>coveralls-maven-plugin</artifactId>
+                    <version>4.2.0</version>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+    <profile>
+        <!-- for open source usage -->
+        <id>github</id>
+        <properties>
+            <package.environment>github</package.environment>
+        </properties>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+    </profile>
+    </profiles>
 
     <repositories>
         <repository>
