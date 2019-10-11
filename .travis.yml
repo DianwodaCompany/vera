@@ -21,7 +21,7 @@ script:
     echo "skip test...."
 
 after_success:
-  - mvn -Dlog.console.close=true  clean generate-resources cobertura:cobertura coveralls:report -DrepoToken="QkJhW5RAnNQVfIKkoSNJLFhMoXZ9I1lkv6HwH"
+  - mvn -Dlog.console.close=true  clean generate-resources cobertura:cobertura coveralls:report
 
 branches:
   only:
@@ -29,7 +29,7 @@ branches:
 
 env:
   global:
-   - secure: "SJhnhgLEmoQkqZM5wCgoS6QDNP4MNWAG1cazZcwSGCTwXfSXUZED3OlSGxXjK0x7UUV8IPemKl6H/MsZJ2c+O9u5wwI0g376lOUX5Ceu8PM30GslY3NkjWdiV9Zz2l78ZYcBFa/52X59rxLN/poLHB1TNIey/Fj3kda0o2nbdC/UfbvNsRll0Z5ixIG4SVt8EAr0GS4t3b9jCMK33nD7HsEOozAMJ/EkQXpYnrok6PD4dWRU1+tDmcYjI0MFtzpUbdjMwhqPxKx1OMdo4kxpQQEM9Z/ZrC1C0yP9y8oxQIVzOhddQehUyDqdbxA5zxh0SnJCfYz7AuoJHQw+hS5S4TjjRSLkjYDTH1k0sD+a39sUr8kzrmUhnOoh63BTnHlVkRdS6LVceNdyNH6heXnm5SSq5ZLJ6jvaG4F6jofp4sfvpqniuB9Vs5bf6Kx7tSzm0othgwp2Adpe0kRrVSXW74c6WZe4yxQGOvBwH/nSdmqNbLJLYBq+UGot5tuqF/zRPQgrVnzF22FjdOHwqkKfW2DzEzBU4iL/Q+Gfx9iNTnakDz4+15W+KjtYEP2sGp8Nncv2uzIpBdxHGTT+J40Qm18cAjBYsADdKgRuLNzteB/gvlK+Hz2BRlj1yCNed6fFzrPpAdEIVEVk24+kopSG/21JS2YgpCHa3u48z0uHgYg="
+   - secure: "KOhrQsXdICiOGVM6sGkhY5BZel/L5USfRgi6M/pAY15LVNffve/IP75eTFTFmdX0OimpKyzZUYgyadSjRe7RfIatGdA8B5nRZ2Qy9Qe31whDAjtHByIALb2XmUERHIVbv/5oG4dlQb83d7+ptGnGbzcXCyBg+1ki6GvMW95Tz0DoTEfFIfTRK0Odkqmsqe5tJyQT2Z48WT/U7mwS/K4uxPj/vV3cqqyoVJXwGWwz7t/cedGSbBLSLRpjo0A0SAE75WrBHwAJBSarEhhUgwAGzENmAAGNGF9U7RMf/QE5HjI4pGr7B8uLoJsKhEvXCiOGtOWlRIGg8X8u91VC/M7XqVGA4f1ibpUAOeoqiaEJ22CsRtP3Q6ZbtJkm8O3iw9PHV8D7QWVZxjOTibwuwuLYluSAlyRMgg86M1GD1fjQyH+CC0YmU56Oj2PQei0WNAaipGWreKii9cKFkUc5mPSFuEw5SECrvndeFuzYxNYQIawpEMCeYWihNdTRpykvcU6CPKqx/H/hh/bfQZG7GM2ieRbVDbB67tuBhQwkCihXCPTWKEGUyrkqvlcYePCTQFFXeWLD1weGOHVZCOrDp42Ds1yDqn6yc1A2tmKId/TMi+0xncv0iPKtD1i+caddMFKC2Ua4ZnEBqlKoIjUp/Yi9rtbdLGj9AT4xcJW+17bE3Y8"
    - "MAVEN_OPTS=-Xmx2g"
 
 addons:
