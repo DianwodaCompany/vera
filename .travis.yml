@@ -21,7 +21,8 @@ script:
     echo "skip test...."
 
 after_success:
-  - mvn -Dlog.console.close=true  clean generate-resources cobertura:cobertura coveralls:report
+  - mvn -Dlog.console.close=true  clean
+  #generate-resources cobertura:cobertura coveralls:report
 
 branches:
   only:
