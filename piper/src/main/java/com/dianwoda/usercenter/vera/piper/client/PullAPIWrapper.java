@@ -45,7 +45,7 @@ public class PullAPIWrapper {
 
   public PullResult processPullResult(PullResult pullResult) {
     PullResultExt pullResultExt = (PullResultExt)pullResult;
-    if (pullResult.getPullStatus() == PullStatus.FOUND) {
+    if (pullResult.getPullStatus() == PullStatus.FOUND && pullResultExt.getCommandBinary() != null) {
       ByteBuffer byteBuffer = ByteBuffer.wrap(pullResultExt.getCommandBinary());
       List<CommandExt> commandExtList = CommandDecoder.decodes(byteBuffer);
 

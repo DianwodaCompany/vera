@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -102,65 +103,63 @@ public class ProcessQueue {
     return 0;
   }
 
-  public List<CommandExt> takeCommands(int num) {
+  public List<CommandExt> takeCommands(int num) throws InterruptedException {
     List<CommandExt> commands = new ArrayList<>();
-    try {
-      this.lockTreeMap.writeLock().lockInterruptibly();
-      for (int i=0; i<num; i++) {
-        Map.Entry<Long, CommandExt> entry = this.commandTreeMap.pollFirstEntry();
-        if (entry != null) {
-          this.commandTempTreeMap.put(entry.getKey(), entry.getValue());
-          commands.add(entry.getValue());
-        } else {
-          break;
+    if (this.lockTreeMap.writeLock().tryLock(2000, TimeUnit.MILLISECONDS)) {
+      try {
+        for (int i = 0; i < num; i++) {
+          Map.Entry<Long, CommandExt> entry = this.commandTreeMap.pollFirstEntry();
+          if (entry != null) {
+            this.commandTempTreeMap.put(entry.getKey(), entry.getValue());
+            commands.add(entry.getValue());
+          } else {
+            break;
+          }
         }
-      }
-      if (commands.isEmpty()) {
-        this.isConsuming = false;
-      }
+        if (commands.isEmpty()) {
+          this.isConsuming = false;
+        }
 
-    } catch (InterruptedException e) {
-      log.error("takeCommands exception", e);
-    } finally {
-      this.lockTreeMap.writeLock().unlock();
+      } finally {
+        this.lockTreeMap.writeLock().unlock();
+      }
     }
     return commands;
   }
 
-  public long commit() {
-    try {
-      this.lockTreeMap.writeLock().lockInterruptibly();
-      Map.Entry<Long, CommandExt> entry = this.commandTempTreeMap.lastEntry();
-      this.msgCount.addAndGet(this.commandTempTreeMap.size() * -1);
-      this.commandTempTreeMap.clear();
+  public long commit() throws InterruptedException {
 
-      if (entry != null) {
-        Long lastOffset = entry.getKey();
-        CommandExt lastValue = entry.getValue();
-        return lastOffset + lastValue.getTotalSize();
+    if (this.lockTreeMap.writeLock().tryLock(2000, TimeUnit.MILLISECONDS)) {
+      try {
+        Map.Entry<Long, CommandExt> entry = this.commandTempTreeMap.lastEntry();
+        this.msgCount.addAndGet(this.commandTempTreeMap.size() * -1);
+        this.commandTempTreeMap.clear();
+
+        if (entry != null) {
+          Long lastOffset = entry.getKey();
+          CommandExt lastValue = entry.getValue();
+          return lastOffset + lastValue.getTotalSize();
+        }
+
+      } finally {
+        this.lockTreeMap.writeLock().unlock();
       }
-    } catch (InterruptedException e) {
-      log.error("commit error", e);
-    } finally {
-      this.lockTreeMap.writeLock().unlock();
     }
     return -1;
   }
 
-  public void consumeAgain(List<CommandExt> commands) {
-    try {
-      this.lockTreeMap.writeLock().lockInterruptibly();
-      if (!commands.isEmpty()) {
-        for (CommandExt command : commands) {
-          this.commandTempTreeMap.remove(command.getStoreOffset());
-          this.commandTreeMap.put(command.getStoreOffset(), command);
+  public void consumeAgain(List<CommandExt> commands) throws InterruptedException {
+    if (this.lockTreeMap.writeLock().tryLock(2000, TimeUnit.MILLISECONDS)){
+      try {
+        if (!commands.isEmpty()) {
+          for (CommandExt command : commands) {
+            this.commandTempTreeMap.remove(command.getStoreOffset());
+            this.commandTreeMap.put(command.getStoreOffset(), command);
+          }
         }
+      } finally {
+        this.lockTreeMap.writeLock().unlock();
       }
-
-    } catch (InterruptedException e) {
-      log.error("consumeAgain error", e);
-    } finally {
-      this.lockTreeMap.writeLock().unlock();
     }
   }
 

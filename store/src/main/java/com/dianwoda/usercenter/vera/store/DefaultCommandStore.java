@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DefaultCommandStore implements CommandStore {
   protected static final Logger log = LoggerFactory.getLogger(DefaultCommandStore.class);
   public static int MAX_SIZE = 1024 * 1024 * 4;
-  public static int blockFileSize = 1024 * 1024 * 20; // 20M
+  public static int blockFileSize = 1024 * 1024 * 200; // 200M
   // Resource reclaim interval
   public static int cleanResourceInterval = 10000;
   public static int reserveResourceInterval = 1000 * 60 * 60 * 24 * 3; // 3天

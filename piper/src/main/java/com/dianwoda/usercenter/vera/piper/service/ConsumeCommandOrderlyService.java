@@ -53,24 +53,31 @@ public class ConsumeCommandOrderlyService {
       try {
         processQueue.getConsumeLock().lockInterruptibly();
         for (boolean continueConsume = true; continueConsume; ) {
+
           if (this.processQueue.isDropped()) {
             log.warn("the process queue not be able to consume, because it's dropped. {}", this.processQueue);
             break;
           }
-          List<CommandExt> commands = processQueue.takeCommands(ConsumeCommandOrderlyService.this.defaultPullConsumer.getConsumeMessageBatchMaxSize());
 
-          if (!commands.isEmpty()) {
-            long beginTimestamp = SystemClock.now();
-            ConsumeOrderlyStatus status = ConsumeCommandOrderlyService.this.commandListener.consumer(commands);
-            long consumeRT = SystemClock.now() - beginTimestamp;
-            ConsumeCommandOrderlyService.this.getConsumerStatsManager().incConsumeRT(
-                    processQueue.getSyncPiperLocation(), consumeRT);
-            boolean processResult = processCommandsResult(status, commands, processQueue);
-            if (!processResult) {
-              log.warn("process command consume result {}, ConsumeOrderlyStatus:" + status, processResult);
+          try {
+            List<CommandExt> commands = processQueue.takeCommands(ConsumeCommandOrderlyService.this.defaultPullConsumer.getConsumeMessageBatchMaxSize());
+
+            if (!commands.isEmpty()) {
+              long beginTimestamp = SystemClock.now();
+              ConsumeOrderlyStatus status = ConsumeCommandOrderlyService.this.commandListener.consumer(commands);
+              long consumeRT = SystemClock.now() - beginTimestamp;
+              ConsumeCommandOrderlyService.this.getConsumerStatsManager().incConsumeRT(
+                      processQueue.getSyncPiperLocation(), consumeRT);
+              boolean processResult = processCommandsResult(status, commands, processQueue);
+              if (!processResult) {
+                log.warn("process command consume result {}, ConsumeOrderlyStatus:" + status, processResult);
+              }
+            } else {
+              break;
             }
-          } else {
-            break;
+
+          } catch (Exception e) {
+            log.error("Consume command error", e);
           }
         }
       } catch (Exception e) {
@@ -83,7 +90,7 @@ public class ConsumeCommandOrderlyService {
   }
 
   public boolean processCommandsResult(ConsumeOrderlyStatus status, List<CommandExt> commands,
-                                       ProcessQueue processQueue) {
+                                       ProcessQueue processQueue) throws InterruptedException {
     boolean continueConsume = true;
     long commitOffset = -1L;
     switch (status) {

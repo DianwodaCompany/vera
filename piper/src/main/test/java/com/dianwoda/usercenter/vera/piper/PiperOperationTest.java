@@ -1,5 +1,6 @@
 package com.dianwoda.usercenter.vera.piper;
 
+import com.dianwoda.usercenter.vera.common.SystemClock;
 import com.dianwoda.usercenter.vera.common.message.CommandDecoder;
 import com.dianwoda.usercenter.vera.common.message.CommandExt;
 import com.dianwoda.usercenter.vera.common.message.GetCommandStatus;
@@ -7,7 +8,13 @@ import com.dianwoda.usercenter.vera.common.protocol.header.ListenRedisRequestHea
 import com.dianwoda.usercenter.vera.common.redis.command.RedisCommand;
 import com.dianwoda.usercenter.vera.common.util.IPUtil;
 import com.dianwoda.usercenter.vera.common.util.NetUtils;
+import com.dianwoda.usercenter.vera.piper.client.ProcessQueue;
+import com.dianwoda.usercenter.vera.piper.client.PullAPIWrapper;
+import com.dianwoda.usercenter.vera.piper.client.protocal.PullResultExt;
+import com.dianwoda.usercenter.vera.piper.client.protocal.SyncPiperPullRequest;
 import com.dianwoda.usercenter.vera.piper.config.PiperConfig;
+import com.dianwoda.usercenter.vera.piper.enums.CommunicationMode;
+import com.dianwoda.usercenter.vera.piper.enums.PullStatus;
 import com.dianwoda.usercenter.vera.piper.redis.command.CommandType;
 import com.dianwoda.usercenter.vera.piper.redis.serializer.RedisCommandDeserializer;
 import com.dianwoda.usercenter.vera.remoting.netty.NettyServerConfig;
@@ -79,16 +86,7 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
 
   @Test
   public void commandWriteAndQueryTest() throws Exception {
-    PiperConfig piperConfig = mockPiperConfig();
-
-    NettyServerConfig nettyServerConfig = new NettyServerConfig();
-    nettyServerConfig.setListenPort(PIPER_BIND_PORT);
-    piperConfig.setHostName(NetUtils.getLocalHostname());
-
-    DefaultCommandStore.blockFileSize = 1024;
-    PiperController piper = PiperFactory.make(piperConfig);
-    piper.setNettyServerConfig(nettyServerConfig);
-
+    PiperController piper = mockPiper();
 
     ListenRedisRequestHeader requestHeader = this.createListenRedisRequest(0);
     piper.getPiperClientInstance().getPiperClientInterImpl().redisReplicatorInitial(requestHeader);
@@ -111,7 +109,7 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
     }
     Thread.sleep(1000);
 
-    String location = piperConfig.location();
+    String location = piper.getPiperConfig().location();
     long readOffset = 0;
     int msgNums = 100;
     // query redis command from block file
@@ -129,6 +127,94 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
     this.outputResult(getCommandResult);
   }
 
+
+  @Test
+  public void pullCommandTest() throws Exception {
+    PiperController piper = mockPiper();
+    ListenRedisRequestHeader requestHeader = this.createListenRedisRequest(0);
+    piper.getPiperClientInstance().getPiperClientInterImpl().redisReplicatorInitial(requestHeader);
+    piper.getPiperClientInstance().getPiperClientInterImpl().redisReplicatorRun();
+
+    while( piper.getPiperClientInstance().getPiperClientInterImpl().getRedisFacadeProcessor()
+            .getSlaveRedisReplicator().getReplicator().getStatus() != CONNECTED) {
+
+      Thread.sleep(100);
+      System.out.println("wait sleeping");
+    }
+
+    Thread.sleep(100);
+
+    // write redis command
+    this.createRedisRecord(piper);
+
+    while(!storeDir.exists()) {
+      Thread.sleep(1000);
+    }
+    Thread.sleep(1000);
+
+    String location = piper.getPiperConfig().location();
+    long readOffset = 0;
+    int msgNums = 100;
+    // query redis command from block file
+    GetCommandResult getCommandResult = piper.getCommandStore().getCommand(location, readOffset, msgNums);
+    byte[] binary = readGetMessageResult(getCommandResult);
+
+    piper.getPiperClientInstance().start();
+
+    PullResultExt pullResultExt = new PullResultExt(PullStatus.FOUND, getCommandResult.getNextBeginOffset(),
+            getCommandResult.getMinOffset(), getCommandResult.getMaxOffset(), null, binary);
+    PullAPIWrapper2 pullAPIWrapper = new PullAPIWrapper2(piper.getPiperClientInstance());
+    pullAPIWrapper.setPullResult(pullResultExt);
+
+    piper.getPiperClientInstance().getPullConsumerImpl().setPullAPIWrapper(pullAPIWrapper);
+
+    SyncPiperPullRequest pullRequest = new SyncPiperPullRequest();
+    pullRequest.setNextOffset(0);
+    pullRequest.setCommitOffset(0);
+    pullRequest.setTargetLocation(piper.getPiperConfig().location());
+    ProcessQueue pq = new ProcessQueue(piper.getPiperConfig().location());
+    pullRequest.setProcessQueue(pq);
+    piper.getPiperClientInstance().
+            getPullMessageService().executePullRequestImmediately(pullRequest);
+
+    int i = 5;
+    while(i-- > 0) {
+      Thread.sleep(1000);
+    }
+
+    Thread.sleep(1000);
+    while (pq.getMaxSpan() > 0) {
+      Thread.sleep(1000);
+    }
+  }
+
+  private PiperController mockPiper() {
+    PiperConfig piperConfig = mockPiperConfig();
+
+    NettyServerConfig nettyServerConfig = new NettyServerConfig();
+    nettyServerConfig.setListenPort(PIPER_BIND_PORT);
+    piperConfig.setHostName(NetUtils.getLocalHostname());
+
+    DefaultCommandStore.blockFileSize = 1024;
+    PiperController piper = PiperFactory.make(piperConfig);
+    piper.setNettyServerConfig(nettyServerConfig);
+    return piper;
+  }
+
+  public byte[] readGetMessageResult(final GetCommandResult getMessageResult) {
+    final ByteBuffer byteBuffer = ByteBuffer.allocate(getMessageResult.getBufferTotalSize());
+    long storeTimestamp = 0;
+    try {
+      List<ByteBuffer> messageBufferList = getMessageResult.getCommandBufferList();
+      for (ByteBuffer bb : messageBufferList) {
+        byteBuffer.put(bb);
+        storeTimestamp = bb.getLong(CommandDecoder.STORE_TIMESTAMP_POSITION);
+      }
+    } finally {
+      getMessageResult.release();
+    }
+    return byteBuffer.array();
+  }
 
   private void createRedisRecord(PiperController piperController) throws Exception {
     RedisCommand command = new RedisCommand();

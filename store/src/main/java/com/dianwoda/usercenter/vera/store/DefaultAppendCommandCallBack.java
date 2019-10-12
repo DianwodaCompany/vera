@@ -40,7 +40,7 @@ public class DefaultAppendCommandCallBack implements AppendCommandCallBack {
     long wroteOffset = fileFromOffset + byteBuffer.position();
     int totalSize = calculateCommandLength(commandInter.getDataLength());
 
-    if (totalSize + FILE_END_MARGIN_LEFT> maxBlank) {
+    if (totalSize + FILE_END_MARGIN_LEFT > maxBlank) {
       resetByteBuffer(this.msgStoreItemMemory, maxBlank);
       // length
       this.msgStoreItemMemory.putInt(maxBlank);

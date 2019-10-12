@@ -208,13 +208,13 @@ public class BlockFile extends ReferenceResource {
       // debug
       String data = new String(tempBuffer.array());
 
-      relativeOffset += totalSize;
-      sumSize += totalSize;
       log.info("file name:" + this.getFileName() + " Content:" +
               data.substring(0, Math.min(data.length(), 100)) + " offset:" + offset +
               " nowOffset:" + (this.getFileFromOffset() + relativeOffset) + " datalen:" + dataLength + " totalSize:" + totalSize +
-              " sumSize:" + sumSize + " readposition:" + readPosition);
+              " sumSize:" + sumSize + " FileFromOffset:" + getFileFromOffset() + " readposition:" + readPosition);
 
+      relativeOffset += totalSize;
+      sumSize += totalSize;
     } while (--num > 0);
 
     if (sumSize > 0) {

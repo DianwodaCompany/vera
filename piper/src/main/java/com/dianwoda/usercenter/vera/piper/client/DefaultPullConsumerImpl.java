@@ -49,7 +49,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Minimum consumer thread number
    */
-  private int consumeThreadMin = 20;
+  private int consumeThreadMin = 10;
 
   /**
    * Max consumer thread number
@@ -62,7 +62,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Batch consumption size
    */
-  private int consumeMessageBatchMaxSize = 2;
+  private int consumeMessageBatchMaxSize = 3;
   /**
    * Max consume times
    */
@@ -77,7 +77,7 @@ public class DefaultPullConsumerImpl {
   private PiperClientInstance piperClientInstance;
   private long flowControlTimes1 = 0;
   private long flowControlTimes2 = 0;
-  private final PullAPIWrapper pullAPIWrapper;
+  private PullAPIWrapper pullAPIWrapper;
   private final ConsumeCommandOrderlyService commandOrderlyService;
   private final CommandListenerOrderly commandListener;
   private final ConsumerOffsetManager offsetManager;
@@ -238,5 +238,9 @@ public class DefaultPullConsumerImpl {
 
   public ConsumerStatsManager getConsumerStatsManager() {
     return this.piperClientInstance.getConsumerStatsManager();
+  }
+
+  public void setPullAPIWrapper(PullAPIWrapper pullAPIWrapper) {
+    this.pullAPIWrapper = pullAPIWrapper;
   }
 }

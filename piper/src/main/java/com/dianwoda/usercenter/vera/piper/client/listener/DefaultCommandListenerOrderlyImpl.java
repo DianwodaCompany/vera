@@ -47,6 +47,8 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
           if (this.piperClientInstance.getPiperClientInterImpl().getRedisFacadeProcessor().write(redisCommand)) {
             log.info("Write into redis success, length {}", command.getDataLength());
           }
+        } else {
+          log.error("command with no data!");
         }
       }
     } catch (Exception e) {
