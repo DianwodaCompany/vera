@@ -12,8 +12,9 @@ notification:
     on_success: always
     on_failure: always
 before_script: 
-before_install: 
-script: echo "skip test...."
+before_install:
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 after_success:
   - mvn -Dlog.console.close=true  clean
     ## 生成测试报告
@@ -27,8 +28,7 @@ branches:
 env:
   global:
   - "MAVEN_OPTS=-Xmx2g"
-  - secure: "i5/Se32g6N0zW2iT8ahZuo+eWiTPWnXzjzKxo8ZRPWU8f5yTPQ2cuHLSVnMQbLB4N2lkDygvRH+uaR3nJzGlbzXoNWjbfpA+WYc+bDyuZR8VdmZBtapTC+qfa2UzeuXVeftI9iIBj05So7B1WFu//iSCVinDeqd5CGbWlIeEL5/vSXyATvuEgH4nc5+6K0tJCHg1xzp2f6NwxTOWCmlbdvDawa+9aHhnNDcjI73HU+Wm+tEJSvxXcr01nuwJF6Qps1KEULXdApfK15/ryfzNPlzGbi7L9+m6BuotU4yeFXW8kvy/OAfuQS6r1Vdvna3beAmei0YZjUPAvd4sItrJqn2BRNyZ1UNpDWdLmDqDi0k+EsLmNk7wEJ3e5dEKcdbdQ7lx4yKWtFL3cbLScdyL9tokVgpPxCtkzAoPukkoCecHOCst2GvBLKfrqtoD12gRUj3MuXAm4ZZcyv+76ozNMkImGgf+n1DzrorMkVmHaQlK+IMpv9YkYR9Z7xAXm4FbCHUCnQ80YrQMddwX0nj7msc5fw938I2kLEDJ4vJeR9yTxNriZRKAhNO0ieVBCUgvPra5d9lR2oMJhpXlfTcB9QBm72fZB+wY+R86dmRW/Zj4dtxbDiENgvLNIG+cEgQN7ywBpg1sPqnFtt3Wc9PgDyt/cmztpdPEJfxyYV6neuU="
-
+   - secure: "ruFVKqXVv5ZaoPy8HbjBFRZ+9Ertwg2o0UutEiwz2uqkoTn2FiRz1JvMREY8xW8mDiI/poaMBDZxon02kbJ/VmcWln5CcePJUQOOtTp+yfTa4ID/my/qFIaz5HXv5PwB5TqQMADTtFZMz3EZRycNX+/2bVl8VZVWtL6Ykj2L66OdPvNtRsgKbAqw5y4sLGfmqoTBJxScp/Eqe5hPDVgn4GgZhzMMZoIwWQVFABbYgk8ffrBh0AiphXBQy+4IXnQT89Q+nM2cqZqQC63iG3tq7HV3kKik0cbtgqK4yG09YZ5/uQG3/4CTEvpVJ+F4US5AK4sGf6KMApz/3WgYQqFJFQWOrohIT2LMDM0Tsz2t5c+D090WLHrRK8Aow4OG9omEULt7XC1kMy9T07a1dsSEKzuqFML4es7BBsx9Qtr6wJ40AP62lzd7WlUHyjf9tNXj1YWoiELnTRVJigyJyfkhQ+Wv2MI6cqXYjYc3z/m7izKNgO1zIDeQkKrKem16ExcP73jbNNA48trooZp8uSauJCVzRoxBxfrV6b6F6FmhFJ/cK6HXTZ5BKmRnoo2YqL3JbR4+llXIL0U/RjcUyySX1NuJfcKa3/j74hGTcXV3Qij+deO5GEnI2/qqPdbVSMVKb4FSBEEyr9KVca36acBqGPiiRewZ64cl97otSiH92aw="
 
 addons:
   coverity_scan:
