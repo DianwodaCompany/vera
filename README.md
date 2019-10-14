@@ -16,6 +16,7 @@ vera
         - [Vera 系统高可用](#vera-系统高可用)
         - [Redis 自身高可用](#redis-自身高可用)
         - [可运维](#可运维)
+    - [文件存储结构](#文件存储结构)
     - [测试数据](#测试数据)
         - [延时测试](#延时测试)
 - [Contribution](#Contribution)  
@@ -27,7 +28,7 @@ vera
 
 <a name="vera-解决什么问题"></a>
 # Vera 解决什么问题
-Redis 在点我达内部得到了广泛的使用，根据运维数据统计，整个点我达全部 Redis Master的读写请求在每秒 60W+，其中不包括Slave的读请求，很多业务甚至会将 Redis 当成内存数据库使用。这样，就对 Redis 多数据中心提出了很大的需求，一是为了提升可用性，解决数据中心 DR(Disaster Recovery) 问题，二是公司业务实现异地多活，不同机房有自己的数据中心，每个数据中心仅读写当前数据中心的数据，但各数据中心的Redis数据需要同步，允许存在一定的延时，在这样的需求下，Vera 应运而生, 一定程度上，Vera实现了Redis Cluster的多主数据同步。  
+Redis 在点我达内部得到了广泛的使用，根据运维数据统计，整个点我达全部Redis Master的读写请求在每秒 60W+，其中不包括Slave的读请求，很多业务甚至会将Redis当成内存数据库使用。这样，就对Redis多数据中心提出了很大的需求，一是为了提升可用性，解决数据中心 DR(Disaster Recovery) 问题，二是公司业务实现异地多活，不同机房有自己的数据中心，每个数据中心仅读写当前数据中心的数据，但各数据中心的Redis数据需要同步，允许存在一定的延时。在这样的需求下，Vera应运而生, 一定程度上，Vera实现了Redis Cluster的多主数据同步。  
 
 为了方便描述，后面用 DC 代表数据中心 (Data Center)。
 
@@ -38,9 +39,9 @@ Redis 在点我达内部得到了广泛的使用，根据运维数据统计，�
 整体架构图如下所示：  
 ![design](https://raw.github.com/DianwodaCompany/vera/master/doc/image/total.jpg)  
 
--  Console 用来提供用户界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
--  NamerServer 各Piper信息与各任务实现情况的集中维护，主要是通过Piper的心跳上报；
--  Piper 最主要的结点，主要功能如下：1) Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；2) 同步其它Piper的数据并写入本地Redis Master中； 所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis;
+-  Console：用来提供用户界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
+-  NamerServer：各Piper信息与各任务执行情况的集中维护，主要是通过Piper的心跳上报；
+-  Piper:Vera中最主要的结点，主要功能如下：1) Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；2) 同步其它Piper的数据并写入本地Redis Master中； 所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis Cluster;
 
 <a name="redis-多主数据同步问题"></a>
 ## Redis 多主数据同步问题
@@ -49,34 +50,43 @@ Redis 在点我达内部得到了广泛的使用，根据运维数据统计，�
 
 ### 使用 piper 带来的优势  
 - 减少 master 同步次数  
-如果异地机房 redis slave 直接连向 redis master，多个 slave 会导致 master 多次同步，而 piper可以将增量数据存储在本地，通过机房间的piper的数据同步，异地机房的piper写入异地机房的redis master, 利用redis自身的主从同步，redis slave再从master获取数据。
+如果异地机房Redis slave 直接连向 redis master，多个 slave 会导致 master 多次同步，而piper可以将增量数据存储在本地，通过机房间的piper的数据同步，异地机房的piper写入异地机房的redis master, 利用redis自身的主从同步，redis slave再从master获取数据。
 - 网络异常时减少全量同步  
-piper 将 Redis 日志数据缓存到磁盘，这样，可以缓存大量的日志数据 (Redis 将数据缓存到内存 ring buffer，容量有限)，当数据中心之间的网络出现较长时间异常时仍然可以续传日志数据。  
+piper将Redis日志数据缓存到磁盘，这样，可以缓存大量的日志数据 (Redis 将数据缓存到内存 ring buffer，容量有限)，当数据中心之间的网络出现较长时间异常时仍然可以续传日志数据。  
 - 更加灵活的数据传输方式
 1.piper之间传输协议可以自定义，方便支持压缩 (目前暂未支持)。2.根据业务可以配置每次启动是从最新数据开始同步，还是从上一次的同步位置开始同步；
 - 安全性提升  
-多个机房之间的数据传输往往需要通过公网进行，这样数据的安全性变得极为重要，piper 之间的数据传输也可以加密 (暂未实现)，提升安全性。
+多个机房之间的数据传输往往需要通过公网进行，这样数据的安全性变得极为重要，piper之间的数据传输也可以加密 (暂未实现)，提升安全性。
 
 ### piper增量同步
-piper之间的数据同步采用增量同步方式，假设piper A开始同步piper B的数据，有如下三种可以实现：
-- piperA仅piperB后面新进来的数据，忽略之前的历史数据；
-- piperA取出保存在本地piperB的同步offset, 接着这个offset继续同步；如果piperA之前很久未同步过piperB的数据，这种方式会导致会有很多历史数据同步过来，不推荐；
+piper之间的数据同步采用增量同步方式，假设piperA开始同步piperB的数据，有如下三种可以实现：
+- piperA仅同步piperB后面新进来的数据，忽略之前的历史数据；
+- piperA取出保存在本地piperB的同步offset, 接着这个offset继续同步；这种方式存在一个问题：如果piperA之前很久未同步过piperB的数据，会导致会有很多历史数据同步过来，不推荐；
 - piperA取出保存在本地piperB的同步offset, 接着这个offset继续同步, 同时对同步过来的数据做处理，过滤一定时间间隔之外的数据；
+
+### 避免双向同步
+两个redis cluster数据双向同步，就需要两个piper也执行双向同步;但按照目前的架构设计，双向同步会引起数据循环重复同步，即假设RedisA新增一条数据，PiperA侦听到此消息后将其写入本地文件，此后PiperB根据本地的offset同步到该新增数据后，并将该数据写入本地文件，因为是双向同步,所以PiperA根据本地offset又会同步到PiperB的新增数据，而这次数据原先就是从PiperA同步过来的，从而引起数据重复同步。针对这种情况Vera采用的做法是，在piper中保存近30秒的历史数据，如果同步过来的数据存在于该历史数据中，则丢弃。
 
 
 ## 高可用&可运维
 <a name="Vera-系统高可用"></a>
 ### Piper 系统高可用
 如果 Piper 挂掉，多数据中心之间的数据传输可能会中断，解决这个问题，Vera设计了两种解决方式：
-1) Piper 有主备两个节点，备节点实时从主节点复制数据，当主节点挂掉后，备节点会被提升为主节点，代替主节点进行服务(主备功能将在下一个版本实现)。
-2) 预启动一个Piper作为备用，操作后台，将挂断的Piper上面的职能迁移到该备用Piper上面，从而恢复数据同步；
+1) Piper有主备两个节点，备节点实时从主节点复制数据，当主节点挂掉后，备节点会被提升为主节点，代替主节点进行服务(主备功能将在下一个版本实现)。
+2) 首先预启动一个Piper作为备用，当主Piper挂掉后，操作后台，将挂掉的Piper上面的职能迁移到该备用Piper上面，从而恢复数据同步(因为是人工操作，如果配置的是仅同步新数据，则操作时间内的数据就无法同步)；
 <a name="redis-自身高可用"></a>
 ### Redis 自身高可用
-Redis 也可能会挂，Redis 本身提供哨兵 (Sentinel) 机制保证集群的高可用；
+Redis Master也可能会挂，Redis本身提供哨兵 (Sentinel) 机制保证集群的高可用；
 ### Vera 可运维
 各piper间的数据同步可能会因为网络中断、主机重启、redis sentinel迁移、pipe迁移等原因而中断同步，除了piper与redis本身的高可用，同时Vera还提供了运维手段。运维人员可以通过console界面进行操作，如果redis sentinel迁移了，可以重新配置新的redis sentinel,如果piper迁移，也可以重新配置新的piper同步；
 运维界面如下：
 ![console](https://raw.github.com/DianwodaCompany/vera/master/doc/image/console-snapshot.png)  
+
+<a name="文件存储结构"></a>
+## 文件存储结构
+文件存储结构如下：
+![command](https://raw.github.com/DianwodaCompany/vera/master/doc/image/command.jpg)  
+piper侦听redis cluster，将接收到的命令同步写入BlockFile，每个BlockFile目前的大小为200M, 写满一个再生成一个新文件，源piper发起数据请求都会带上offset, 目的piper根据offset找到相应blockfile, 并且定位到offset位置读取相应redis命令数据，默认最多读取50条，同时返回下一次应该读取的nextOffset给调用方。其中piper读写blockfile的方式采用内存映射加定时flush硬盘的方式；
 
 
 <a name="测试数据"></a>
@@ -87,8 +97,8 @@ Redis 也可能会挂，Redis 本身提供哨兵 (Sentinel) 机制保证集群�
 测试方式如下图所示。新数据写入Redis Master，Piper1侦听到RedisMaster事件将数据写入本地文件，同时通知其它订阅该Piper的其它Piper来获取新数据，Piper2请求Piper1获取数据后，再写入Redis Master2, 整个测试延时时间为 t1+t2+t3。  
 ![test](https://raw.github.com/DianwodaCompany/vera/master/doc/image/delay.jpg)  
 #### 测试数据
-因为Piper间获取新增数据有两种方式: 1. Consumer定时向Provider请求数据，采用pull的方式；2. 为避免没数据时频繁的pull, Provider会hold该请求，如果这时有新增数据，会重启该请求,使得Consumer能在第一时间获取该数据；
-在点我达生产环境单个机房进行了测试，大部分情况基本上是在ms级别的范围内。但如果由于Provider hold请求，导致Consumer超时未得到响应，此时Consumer会等待一些时间重新pull, 默认是10秒。
+因为Piper间获取新增数据有两种方式: 1. Consumer定时向Provider请求数据，采用pull的方式；2. 为避免没数据时频繁的pull, Provider会hold该请求，如果这时有新增数据，会响应该请求,使得Consumer能在第一时间获取该数据；
+在点我达生产环境单个机房进行了测试，大部分情况基本上是在ms级别的范围内。但如果由于Provider hold请求，如果Consumer超时未得到响应，此时Consumer会等待一些时间重新pull, 这个时间默认是10秒，所以这种情况下延时时间为 t1+t2+t3 + 10000，出现次数较少 。
 
 <a name="Contribution"></a>
 # Contribution
