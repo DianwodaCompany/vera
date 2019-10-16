@@ -7,6 +7,7 @@ import com.dianwoda.usercenter.vera.common.redis.command.RedisCommand;
 import com.dianwoda.usercenter.vera.piper.redis.serializer.RedisCommandDeserializer;
 import com.dianwoda.usercenter.vera.piper.client.PiperClientInstance;
 import com.dianwoda.usercenter.vera.piper.enums.ConsumeOrderlyStatus;
+import com.dianwoda.usercenter.vera.piper.service.ConsumeCommandOrderlyService;
 import com.dianwoda.usercenter.vera.store.io.ObjectDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
     this.deserializer = new RedisCommandDeserializer();
   }
   @Override
-  public ConsumeOrderlyStatus consumer(List<CommandExt> commands) {
+  public ConsumeOrderlyStatus consumer(String syncPiperLocation, List<CommandExt> commands) {
     if (commands == null || commands.isEmpty()) {
       return ConsumeOrderlyStatus.SUSPEND;
     }
@@ -36,6 +37,9 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
       for (CommandExt command : commands) {
         long storeTimeStamp = command.getStoreTimestamp();
         log.info("command store data time:" + UtilAll.timeMillisToHumanString2(storeTimeStamp));
+
+        this.piperClientInstance.getConsumerStatsManager().incConsumeLifeCircleRT(
+                syncPiperLocation,SystemClock.now() - storeTimeStamp);
 
         //  根据时间过滤数据
         if (this.piperClientInstance.isSyncCommandFilterSwitch() && ((storeTimeStamp + this.piperClientInstance.getCommandPostDueTimeMillis() < SystemClock.now()))) {

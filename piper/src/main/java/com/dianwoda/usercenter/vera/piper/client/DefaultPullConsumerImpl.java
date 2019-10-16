@@ -37,11 +37,11 @@ public class DefaultPullConsumerImpl {
   /**
    * Flow control threshold
    */
-  private int pullThresholdForQueue = 1000;
+  public static  int pullThresholdForQueue = 1000;
   /**
    * Concurrently max span offset.it has no effect on sequential consumption
    */
-  private int consumeConcurrentlyMaxSpan = 2000;
+  public static int consumeConcurrentlyMaxSpan = 20000;
   /**
    * Batch pull size
    */
@@ -54,7 +54,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Max consumer thread number
    */
-  private int consumeThreadMax = 64;
+  private int consumeThreadMax = 10;
   /**
    * Message pull Interval
    */
@@ -90,6 +90,10 @@ public class DefaultPullConsumerImpl {
     this.commandOrderlyService = new ConsumeCommandOrderlyService(this, this.commandListener);
   }
 
+  public void start() {
+    this.commandOrderlyService.start();
+  }
+
   public void pullCommand(SyncPiperPullRequest pullRequest) throws Exception {
     final ProcessQueue processQueue = pullRequest.getProcessQueue();
     if (processQueue.isDropped()) {
@@ -123,7 +127,6 @@ public class DefaultPullConsumerImpl {
 
     final long beginTimestamp = SystemClock.now();
     PullCallback pullCallback = new PullCallback() {
-
       @Override
       public void onSuccess(PullResult pullResult) {
         if (pullResult != null) {
@@ -176,7 +179,7 @@ public class DefaultPullConsumerImpl {
 
       @Override
       public void onException(Throwable e, RequestExceptionReason reason) {
-        log.warn("execute the pull requesst exception, reason:" + reason, e);
+        log.warn("execute the pull requesst:" + pullRequest + ",  exception, reason:" + reason, e);
         if (reason == RequestExceptionReason.TIME_OUT) {
           DefaultPullConsumerImpl.this.piperClientInstance.getPullMessageService().executePullRequestLater(pullRequest, PULL_TIME_DELAY_MILLS_WHEN_TIMEOUT);
         } else {

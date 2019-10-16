@@ -81,7 +81,7 @@ public class BlockFileQueue  {
       return null;
     }
     try {
-      int index = (int)offset/this.blockFileSize - (int)firstOffset/this.blockFileSize;
+      int index = (int)(offset/this.blockFileSize - (int)firstOffset/this.blockFileSize);
       if (index >= this.blockFiles.size()) {
         log.error(String.format("offset too big, can't match. offset:%d, blockfile size:%d, index:%d", offset,
                 this.blockFiles.size(), index));
@@ -89,7 +89,8 @@ public class BlockFileQueue  {
       }
       return this.blockFiles.get(index);
     } catch (Exception e) {
-      log.error("find block file by offset:{} failture", offset);
+      log.error("find block file by offset: " + offset + " failture", e);
+      log.info("blockFiles:" + blockFiles);
     }
     return null;
   }

@@ -270,7 +270,6 @@ public class Redic extends Jedis {
   }
 
 
-
   public List<RedicNode> getRedicNodes() {
     return redicNodes;
   }

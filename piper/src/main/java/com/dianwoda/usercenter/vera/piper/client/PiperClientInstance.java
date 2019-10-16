@@ -77,7 +77,9 @@ public class PiperClientInstance {
   public void initial() {
     this.piperClientAPIImpl.updateNamerLocation(this.piperConfig.nameLocation());
   }
+
   public void start() {
+    this.pullConsumerImpl.start();
     this.piperClientAPIImpl.start();
     this.pullMessageService.start();
     scheduledExecutorService.scheduleAtFixedRate(() -> {

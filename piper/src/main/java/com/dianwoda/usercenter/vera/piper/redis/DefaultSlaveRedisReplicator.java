@@ -108,7 +108,7 @@ public class DefaultSlaveRedisReplicator {
           return;
         }
         try {
-          logger.info("接收命令{}", redisCommand);
+          logger.info("Recevie {}", redisCommand);
           redisReplicatorListener.receive(redisCommand);
         } catch (Exception e) {
           logger.error("接收命令出错", e);

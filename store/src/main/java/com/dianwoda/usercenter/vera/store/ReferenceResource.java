@@ -1,5 +1,7 @@
 package com.dianwoda.usercenter.vera.store;
 
+import com.dianwoda.usercenter.vera.common.SystemClock;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -10,6 +12,7 @@ public abstract class ReferenceResource {
   private AtomicInteger ref = new AtomicInteger(1);
   private volatile boolean available = true;
   private volatile boolean cleanUpOver = false;
+  private volatile long firstShutdownTimestamp = 0;
 
   public boolean hold() {
     if (isAvailable()) {
@@ -25,8 +28,16 @@ public abstract class ReferenceResource {
    * @param intervalForcibly
    */
   public void shutdown(final long intervalForcibly) {
-    this.available = true;
-    this.release();
+    if (this.available) {
+      this.available = false;
+      this.firstShutdownTimestamp = SystemClock.now();
+      this.release();
+    } else if (this.getRefCount() > 0) {
+      if ((SystemClock.now() - this.firstShutdownTimestamp) >= intervalForcibly) {
+        this.ref.set(-1000 - this.getRefCount());
+        this.release();
+      }
+    }
   }
 
   public void release() {

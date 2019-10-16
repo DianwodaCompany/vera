@@ -192,7 +192,7 @@ public class PiperClientInterImpl {
     }
     SyncPiperPullRequest pullRequest = new SyncPiperPullRequest();
     pullRequest.setNextOffset(nextOffset);
-    pullRequest.setCommitOffset(commitOffset);
+    pullRequest.setCommitOffset(nextOffset);
     pullRequest.setTargetLocation(syncPiperLocation);
     ProcessQueue pq = this.createProcessQueue(syncPiperLocation);
     pullRequest.setProcessQueue(pq);
@@ -227,7 +227,7 @@ public class PiperClientInterImpl {
   private ProcessQueue stopProcessQueue(String syncPiperLocation) {
     ProcessQueue pq = this.syncPiperProcessMap.get(syncPiperLocation);
     if (pq != null) {
-      pq.setDropped(true);
+      pq.close();
     }
     return pq;
   }

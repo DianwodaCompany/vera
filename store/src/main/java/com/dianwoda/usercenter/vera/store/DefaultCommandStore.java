@@ -61,6 +61,7 @@ public class DefaultCommandStore implements CommandStore {
     this.callBack = new DefaultAppendCommandCallBack(this);
     this.piperStatsManager = piperStatsManager;
     this.commandArrivingListener = commandArrivingListener;
+    this.clearStoreFileService = new ClearStoreFileService();
   }
 
   @Override
@@ -475,7 +476,6 @@ public class DefaultCommandStore implements CommandStore {
   }
 
   private void addScheduleTask() {
-
     new ThreadFactoryImpl("flushBlockFileThread_").
             newThread(this.flushRealTimeService).start();
 
@@ -568,7 +568,7 @@ public class DefaultCommandStore implements CommandStore {
       if (isTimeMeet || isSpaceMeet) {
 
         log.info(String.format("begin to delete before %d hours file. timeup: %s spacefull: %s",
-                reserveTime / 1000 / 600, isTimeMeet, isSpaceMeet));
+                reserveTime / 1000 / 60 / 60, isTimeMeet, isSpaceMeet));
 
         int deleteCount = DefaultCommandStore.this.blockFileQueue.deleteExpiredFileByTime(reserveTime,
                 deleteFilesInterval, intervalForcibly);

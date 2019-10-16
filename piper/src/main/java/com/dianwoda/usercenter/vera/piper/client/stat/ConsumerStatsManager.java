@@ -37,6 +37,7 @@ public class ConsumerStatsManager {
   private static final String LOCATION_CONSUME_RT = "CONSUME_RT";
   private static final String LOCATION_PULL_TPS = "PULL_TPS";
   private static final String LOCATION_PULL_RT = "PULL_RT";
+  private static final String LOCATION_CONSUME_LIFE_CIRCLE_RT = "LOCATION_CONSUME_LIFE_CIRCLE_RT";
 
   private final StatsItemSet locationConsumeOKTPS;
   private final StatsItemSet locationConsumeRT;
@@ -44,6 +45,7 @@ public class ConsumerStatsManager {
   private final StatsItemSet locationConsumeFinalFailedTPS;
   private final StatsItemSet locationPullTPS;
   private final StatsItemSet locationPullRT;
+  private final StatsItemSet locationConsumeLifeCircleRT;
 
   public ConsumerStatsManager(final ScheduledExecutorService scheduledExecutorService) {
     this.locationConsumeOKTPS =
@@ -61,6 +63,7 @@ public class ConsumerStatsManager {
     this.locationPullTPS = new StatsItemSet(LOCATION_PULL_TPS, scheduledExecutorService, log);
 
     this.locationPullRT = new StatsItemSet(LOCATION_PULL_RT, scheduledExecutorService, log);
+    this.locationConsumeLifeCircleRT = new StatsItemSet(LOCATION_CONSUME_LIFE_CIRCLE_RT, scheduledExecutorService, log);
   }
 
   public void start() {
@@ -91,6 +94,10 @@ public class ConsumerStatsManager {
 
   public void incConsumeFinalFailedTPS(final String location, final long msgs) {
     this.locationConsumeFinalFailedTPS.addValue(location, (int) msgs, 1);
+  }
+
+  public void incConsumeLifeCircleRT(final String location, final long rt) {
+    this.locationConsumeLifeCircleRT.addValue(location, (int) rt, 1);
   }
 
   public ConsumeStatus consumeStatus(final String location) {
@@ -124,6 +131,11 @@ public class ConsumerStatsManager {
     if (ss5 != null) {
       cs.setConsumeFailedMsgs(ss5.getSum());
     }
+
+    StatsSnapshot ss6 = this.getLocationConsumeLifeCircleRT(location);
+    if (ss6 != null) {
+      cs.setConsumeLifeCircleRT(ss6.getSum());
+    }
     return cs;
   }
 
@@ -149,5 +161,9 @@ public class ConsumerStatsManager {
 
   private StatsSnapshot getConsumeFailedTPS(final String location) {
     return this.locationConsumeFailedTPS.getStatsDataInMinute(location);
+  }
+
+  public StatsSnapshot getLocationConsumeLifeCircleRT(final String location) {
+    return locationConsumeLifeCircleRT.getStatsDataInMinute(location);
   }
 }

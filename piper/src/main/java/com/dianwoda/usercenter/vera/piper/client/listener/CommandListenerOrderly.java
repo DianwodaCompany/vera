@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface CommandListenerOrderly extends CommandListener {
 
-  ConsumeOrderlyStatus consumer(List<CommandExt> commands);
+  ConsumeOrderlyStatus consumer(String syncPiperLocation, List<CommandExt> commands);
 }

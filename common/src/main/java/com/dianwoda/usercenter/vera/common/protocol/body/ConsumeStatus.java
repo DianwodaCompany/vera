@@ -23,7 +23,7 @@ public class ConsumeStatus {
   private double consumeRT;
   private double consumeOKTPS;
   private double consumeFailedTPS;
-
+  private double consumeLifeCircleRT;
   private long consumeFailedMsgs;
 
   public double getPullRT() {
@@ -74,9 +74,18 @@ public class ConsumeStatus {
     this.consumeFailedMsgs = consumeFailedMsgs;
   }
 
+  public double getConsumeLifeCircleRT() {
+    return consumeLifeCircleRT;
+  }
+
+  public void setConsumeLifeCircleRT(double consumeLifeCircleRT) {
+    this.consumeLifeCircleRT = consumeLifeCircleRT;
+  }
+
   @Override
   public String toString() {
     return "pullRT:" + pullRT + " pullTPS:" + pullTPS + " consumeRT:" + consumeRT + " consumeOKTPS:" + consumeOKTPS +
-            " consumeFailedTPS:" + consumeFailedTPS + " consumeFailedMsgs:" + consumeFailedMsgs;
+            " consumeFailedTPS:" + consumeFailedTPS + " consumeFailedMsgs:" + consumeFailedMsgs +
+            " consumeLifeCircleRT:" + consumeLifeCircleRT;
   }
 }

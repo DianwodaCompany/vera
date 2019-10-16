@@ -68,8 +68,13 @@ public class ProcessQueue {
     return dropped;
   }
 
-  public void setDropped(boolean dropped) {
+  private void setDropped(boolean dropped) {
     this.dropped = dropped;
+  }
+
+  public boolean close() {
+    this.setDropped(true);
+    return true;
   }
 
   public long getLastPullTimestamp() {
@@ -183,6 +188,10 @@ public class ProcessQueue {
     } finally {
       this.lockTreeMap.writeLock().unlock();
     }
+  }
+
+  public boolean isConsuming() {
+    return isConsuming;
   }
 
   public void reset() {

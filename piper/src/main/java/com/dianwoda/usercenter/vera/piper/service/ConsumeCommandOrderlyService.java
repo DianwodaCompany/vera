@@ -26,6 +26,8 @@ public class ConsumeCommandOrderlyService {
   private final CommandListenerOrderly commandListener;
   private final ThreadPoolExecutor consumerPoolExecutor;
   private final ScheduledExecutorService scheduledExecutorService;
+  private final ScheduledExecutorService checkExecutorService;
+  private CheckConsumeService checkConsumeService;
 
   public ConsumeCommandOrderlyService(DefaultPullConsumerImpl defaultPullConsumer, CommandListenerOrderly commandListener) {
     this.defaultPullConsumer = defaultPullConsumer;
@@ -33,12 +35,21 @@ public class ConsumeCommandOrderlyService {
     this.consumerPoolExecutor = new ThreadPoolExecutor(defaultPullConsumer.getConsumeThreadMin(), defaultPullConsumer.getConsumeThreadMax(),
             1000 * 60, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactoryImpl("ConsumerCommandThread_"));
     this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ConsumerCommandScheduleThread_"));
+    this.checkExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("CheckConsumeScheduleThread_"));
+    this.checkConsumeService = new CheckConsumeService();
   }
 
   public void submitConsumeRequest(List<CommandExt> commandExts, ProcessQueue processQueue, boolean dispatchConsume) {
     if (dispatchConsume) {
       this.consumerPoolExecutor.submit(new ConsumeRequest(processQueue));
+      this.checkConsumeService.setFirstDispatchSuccess(true);
+    } else {
+      this.checkConsumeService.setFirstDispatchFail(processQueue);
     }
+  }
+
+  public void start() {
+    this.consumerPoolExecutor.submit(this.checkConsumeService);
   }
 
   class ConsumeRequest implements Runnable {
@@ -58,13 +69,12 @@ public class ConsumeCommandOrderlyService {
             log.warn("the process queue not be able to consume, because it's dropped. {}", this.processQueue);
             break;
           }
-
           try {
             List<CommandExt> commands = processQueue.takeCommands(ConsumeCommandOrderlyService.this.defaultPullConsumer.getConsumeMessageBatchMaxSize());
 
             if (!commands.isEmpty()) {
               long beginTimestamp = SystemClock.now();
-              ConsumeOrderlyStatus status = ConsumeCommandOrderlyService.this.commandListener.consumer(commands);
+              ConsumeOrderlyStatus status = ConsumeCommandOrderlyService.this.commandListener.consumer(processQueue.getSyncPiperLocation(), commands);
               long consumeRT = SystemClock.now() - beginTimestamp;
               ConsumeCommandOrderlyService.this.getConsumerStatsManager().incConsumeRT(
                       processQueue.getSyncPiperLocation(), consumeRT);
@@ -75,7 +85,6 @@ public class ConsumeCommandOrderlyService {
             } else {
               break;
             }
-
           } catch (Exception e) {
             log.error("Consume command error", e);
           }
@@ -86,6 +95,101 @@ public class ConsumeCommandOrderlyService {
       } finally {
         processQueue.getConsumeLock().unlock();
       }
+    }
+  }
+
+  /**
+   * 检测processqueue 消费的正常
+   */
+  class CheckConsumeService implements Runnable {
+    private long firstDispatchFailTimestamp = 0;
+    private int firstDispatchFailTimes = 0;
+    private int firstDispatchFailTimesThreshold = 3;
+    private ProcessQueue processQueue;
+    private boolean check = true;
+    private int count = 0;
+
+    public void setFirstDispatchFail(ProcessQueue processQueue) {
+      this.processQueue = processQueue;
+
+      if (this.firstDispatchFailTimestamp == 0) {
+        this.firstDispatchFailTimestamp = SystemClock.now();
+      }
+      this.firstDispatchFailTimes++;
+
+      if (check()) {
+        log.info("CheckConsumeService submit ConsumeRequest");
+        ConsumeCommandOrderlyService.this.checkExecutorService.submit(new ConsumeRequest(processQueue));
+        clean();
+      }
+    }
+
+    public void setFirstDispatchSuccess(boolean firstDispatchSuccess) {
+      if (firstDispatchSuccess == true) {
+        this.firstDispatchFailTimestamp = 0;
+        this.firstDispatchFailTimes = 0;
+      }
+    }
+
+    @Override
+    public void run() {
+      while (check) {
+        try {
+          if (count++ % 200 == 0 ) {
+            log.info("CheckConsumeService start checking");
+            count = 0;
+          }
+
+          if (this.processQueue == null || this.processQueue.isDropped()) {
+            suspend(1500);
+            continue;
+          }
+
+          if ((this.processQueue.getMaxSpan() > DefaultPullConsumerImpl.pullThresholdForQueue ||
+                  this.processQueue.getMsgCount().get() > DefaultPullConsumerImpl.consumeConcurrentlyMaxSpan)
+                  && this.firstDispatchFailTimes >= firstDispatchFailTimesThreshold && this.processQueue.isConsuming()) {
+
+            log.info("CheckConsumeService submit ConsumeRequest");
+            ConsumeCommandOrderlyService.this.checkExecutorService.submit(new ConsumeRequest(processQueue));
+            clean();
+            suspend(1500);
+            continue;
+          }
+          suspend(1000);
+        } catch (Exception e) {
+          log.error("CheckConsumeService check error", e);
+          try {
+            suspend(500);
+          } catch (InterruptedException e1) {
+            log.error("CheckConsumeService check error", e1);
+          }
+        }
+      }
+    }
+
+    public boolean check() {
+      if (this.firstDispatchFailTimes > 1 &&
+              (SystemClock.now() - this.firstDispatchFailTimestamp) >= 1000 * 30) {
+        return true;
+      }
+
+      if (this.firstDispatchFailTimestamp == 0 ||
+              (SystemClock.now() - this.firstDispatchFailTimestamp) < 1000) {
+        return false;
+      }
+      if (this.firstDispatchFailTimes < firstDispatchFailTimesThreshold) {
+        return false;
+      }
+      return true;
+    }
+
+    private void clean() {
+      this.firstDispatchFailTimestamp = 0;
+      this.firstDispatchFailTimes = 0;
+    }
+
+    private void suspend(int timestamp) throws InterruptedException {
+      Thread.sleep(timestamp);
     }
   }
 

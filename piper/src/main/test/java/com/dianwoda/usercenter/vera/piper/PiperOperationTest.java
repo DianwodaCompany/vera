@@ -99,7 +99,7 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
       System.out.println("wait sleeping");
     }
 
-    Thread.sleep(100);
+    Thread.sleep(1000);
 
     // write redis command
     this.createRedisRecord(piper);
@@ -207,6 +207,9 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
     try {
       List<ByteBuffer> messageBufferList = getMessageResult.getCommandBufferList();
       for (ByteBuffer bb : messageBufferList) {
+
+
+
         byteBuffer.put(bb);
         storeTimestamp = bb.getLong(CommandDecoder.STORE_TIMESTAMP_POSITION);
       }
