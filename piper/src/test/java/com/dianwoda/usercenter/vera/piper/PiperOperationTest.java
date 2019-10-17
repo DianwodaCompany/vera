@@ -84,7 +84,7 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
   }
 
 
-  @Test
+  //@Test
   public void commandWriteAndQueryTest() throws Exception {
     PiperController piper = mockPiper();
 
