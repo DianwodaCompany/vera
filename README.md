@@ -4,7 +4,7 @@ vera
 ### [master]
 [![Build Status](https://travis-ci.org/DianwodaCompany/vera.svg?branch=master)](https://travis-ci.org/DianwodaCompany/vera)
 [![Coverage Status](https://coveralls.io/repos/github/DianwodaCompany/vera/badge.svg?branch=master)](https://coveralls.io/github/DianwodaCompany/vera?branch=master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/19406/badge.sv)](https://scan.coverity.com/projects/dianwodacompany-vera)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/19406/badge.svg)](https://scan.coverity.com/projects/dianwodacompany-vera)
 
 <!-- MarkdownTOC -->
 
