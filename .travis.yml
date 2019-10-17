@@ -11,15 +11,15 @@ notification:
     - huangfeihong@dianwoda.com
     on_success: always
     on_failure: always
-before_script: 
+before_script:
+    echo "skip test...."
 before_install:
-  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 after_success:
-  - mvn -Dlog.console.close=true  clean generate-resources coveralls:report
+  - mvn -Dlog.console.close=true  clean generate-resources cobertura:cobertura coveralls:report
 
 branches:
   only:
-  - master
+    - master
 env:
   global:
    - "MAVEN_OPTS=-Xmx2g"

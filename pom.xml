@@ -49,9 +49,14 @@
             <email>huangfeihong@dianwoda.com</email>
         </developer>
     </developers>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
+        <cobertura-maven-plugin.version>2.7</cobertura-maven-plugin.version>
+        <cobertura.version>2.1.1</cobertura.version>
     </properties>
+
     <modules>
 		<module>piper</module>
 		<module>remoting</module>
@@ -74,22 +79,40 @@
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.3</version>
-                    <executions>
-                        <execution>
-                            <id>prepare-agent</id>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                            </goals>
-                        </execution>
-                    </executions>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
                     <version>4.3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>cobertura-maven-plugin</artifactId>
+                    <version>${cobertura-maven-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>net.sourceforge.cobertura</groupId>
+                            <artifactId>cobertura</artifactId>
+                            <version>${cobertura.version}</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>ch.qos.logback</groupId>
+                                    <artifactId>logback-classic</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <format>xml</format>
+                        <maxmem>256m</maxmem>
+                        <aggregate>true</aggregate>
+                    </configuration>
                 </plugin>
             </plugins>
         </build>
@@ -152,17 +175,30 @@
 		</dependency>
 	</dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>Releases</id>
+            <name>Local Nexus Repository</name>
+            <url>http://192.168.1.177:8081/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>Snapshots</id>
+            <name>Local Nexus Repository</name>
+            <url>http://192.168.1.177:8081/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
-	<distributionManagement>
-		<repository>
-			<id>Releases</id>
-			<name>Local Nexus Repository</name>
-			<url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>Snapshots</id>
-			<name>Local Nexus Repository</name>
-			<url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
+
+    <!--<distributionManagement>-->
+		<!--<repository>-->
+			<!--<id>Releases</id>-->
+			<!--<name>Local Nexus Repository</name>-->
+			<!--<url>http://nexus.nidianwo.com/nexus/content/repositories/releases</url>-->
+		<!--</repository>-->
+		<!--<snapshotRepository>-->
+			<!--<id>Snapshots</id>-->
+			<!--<name>Local Nexus Repository</name>-->
+			<!--<url>http://nexus.nidianwo.com/nexus/content/repositories/snapshots</url>-->
+		<!--</snapshotRepository>-->
+	<!--</distributionManagement>-->
 </project>
