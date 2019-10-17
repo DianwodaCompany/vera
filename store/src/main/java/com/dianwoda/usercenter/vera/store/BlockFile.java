@@ -104,7 +104,7 @@ public class BlockFile extends ReferenceResource {
       this.storeTimestamp = result.getStoreTimestamp();
       return result;
     } catch (Throwable e) {
-      log.error("Error occurred when append message to blockFile.", e);
+      log.error("Error occurred when append message to blockFile, wrotePosition:" + this.wrotePosition, e);
       return new AppendCommandResult(AppendCommandStatus.UNKNOWN_ERROR);
     }
   }

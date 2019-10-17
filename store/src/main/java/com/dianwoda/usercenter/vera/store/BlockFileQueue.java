@@ -191,8 +191,8 @@ public class BlockFileQueue  {
       long fileTailOffset = file.getFileFromOffset() + this.blockFileSize;
       if (fileTailOffset > offset) {
         if (offset >= file.getFileFromOffset()) {
-          file.setWrotePosition((int)offset % this.blockFileSize);
-          file.setFlushedPosition((int)offset % this.blockFileSize);
+          file.setWrotePosition((int)(offset % this.blockFileSize));
+          file.setFlushedPosition((int)(offset % this.blockFileSize));
 
         } else {
           file.destroy(1000);
@@ -263,6 +263,7 @@ public class BlockFileQueue  {
       for (BlockFile blockFile : blockFiles) {
 
         if (timeStamp - blockFile.getFile().lastModified() >= expiredTime) {
+          log.info(blockFile.getFileName() + " last modified timestamp:" + UtilAll.timeMillisToHumanString2(blockFile.getFile().lastModified()) + " expired");
           blockFile.destroy(intervalForcibly);
           files.add(blockFile);
           deleteCount++;

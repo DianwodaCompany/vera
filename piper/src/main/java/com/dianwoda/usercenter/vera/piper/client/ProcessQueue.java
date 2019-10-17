@@ -35,11 +35,12 @@ public class ProcessQueue {
     this.syncPiperLocation = syncPiperLocation;
   }
 
-  public boolean putCommand(final List<CommandExt> commands) {
+  public ProcessQueueStatus putCommand(final List<CommandExt> commands) {
     if (commands == null) {
-      return false;
+      return new ProcessQueueStatus(-1, false);
     }
     boolean dispatchConsume = false;
+    int oldMsgCount = msgCount.get();
     try {
       this.lockTreeMap.writeLock().lockInterruptibly();
       int validMsgCount = 0;
@@ -57,11 +58,11 @@ public class ProcessQueue {
 
     } catch (Exception e) {
       log.error("pullCommand exception", e);
-      return false;
+      return new ProcessQueueStatus(-1, false);
     } finally {
       this.lockTreeMap.writeLock().unlock();
     }
-    return dispatchConsume;
+    return new ProcessQueueStatus(oldMsgCount, dispatchConsume);
   }
 
   public boolean isDropped() {
@@ -198,5 +199,28 @@ public class ProcessQueue {
     this.clear();
     this.dropped = false;
     this.isConsuming = false;
+  }
+
+  static class ProcessQueueStatus {
+    private boolean dispatchConsume;
+    private int noProccessMsgCount;
+
+    public ProcessQueueStatus(int noProccessMsgCount, boolean dispatchConsume) {
+      this.dispatchConsume = dispatchConsume;
+      this.noProccessMsgCount = noProccessMsgCount;
+    }
+
+    public boolean isDispatchConsume() {
+      return dispatchConsume;
+    }
+
+    public int isNoProccessMsgCount() {
+      return noProccessMsgCount;
+    }
+
+    @Override
+    public String toString() {
+      return "dispatchConsume:" + dispatchConsume + ", noProccessMsgCount:" + noProccessMsgCount;
+    }
   }
 }

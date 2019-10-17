@@ -49,7 +49,7 @@ public class ConsumeCommandOrderlyService {
   }
 
   public void start() {
-    this.consumerPoolExecutor.submit(this.checkConsumeService);
+    this.checkExecutorService.submit(this.checkConsumeService);
   }
 
   class ConsumeRequest implements Runnable {
@@ -147,7 +147,7 @@ public class ConsumeCommandOrderlyService {
 
           if ((this.processQueue.getMaxSpan() > DefaultPullConsumerImpl.pullThresholdForQueue ||
                   this.processQueue.getMsgCount().get() > DefaultPullConsumerImpl.consumeConcurrentlyMaxSpan)
-                  && this.firstDispatchFailTimes >= firstDispatchFailTimesThreshold && this.processQueue.isConsuming()) {
+                  && this.firstDispatchFailTimes > 0 && this.processQueue.isConsuming()) {
 
             log.info("CheckConsumeService submit ConsumeRequest");
             ConsumeCommandOrderlyService.this.checkExecutorService.submit(new ConsumeRequest(processQueue));
@@ -155,7 +155,7 @@ public class ConsumeCommandOrderlyService {
             suspend(1500);
             continue;
           }
-          suspend(1000);
+          suspend(1200);
         } catch (Exception e) {
           log.error("CheckConsumeService check error", e);
           try {

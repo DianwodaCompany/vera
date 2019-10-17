@@ -148,9 +148,9 @@ public class DefaultPullConsumerImpl {
               } else {
                 DefaultPullConsumerImpl.this.getConsumerStatsManager().incPullTPS(targetLocation, pullResult.getCmdFoundList().size());
 
-                boolean dispatchConsume = pullRequest.getProcessQueue().putCommand(pullResult.getCmdFoundList());
-                log.info("dispatchConsume:" + dispatchConsume);
-                DefaultPullConsumerImpl.this.commandOrderlyService.submitConsumeRequest(pullResult.getCmdFoundList(), pullRequest.getProcessQueue(), dispatchConsume);
+                ProcessQueue.ProcessQueueStatus processQueueStatus = pullRequest.getProcessQueue().putCommand(pullResult.getCmdFoundList());
+                log.info("processQueueStatus:" + processQueueStatus);
+                DefaultPullConsumerImpl.this.commandOrderlyService.submitConsumeRequest(pullResult.getCmdFoundList(), pullRequest.getProcessQueue(), processQueueStatus.isDispatchConsume());
                 pullRequest.setCommitOffset(offsetManager.getOffset(targetLocation));
                 if (DefaultPullConsumerImpl.this.pullInterval > 0) {
                   DefaultPullConsumerImpl.this.piperClientInstance.getPullMessageService().executePullRequestLater(pullRequest, DefaultPullConsumerImpl.this.pullInterval);
