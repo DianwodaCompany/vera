@@ -15,7 +15,7 @@ before_script:
     echo "skip test...."
 before_install:
 after_success:
-  - mvn -Dlog.console.close=true  clean generate-resources cobertura:cobertura coveralls:report
+  - mvn -Dlog.console.close=true  clean test generate-resources cobertura:cobertura coveralls:report
 
 branches:
   only:
