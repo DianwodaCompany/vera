@@ -15,11 +15,7 @@ before_script:
 before_install:
   - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 after_success:
-  - mvn -Dlog.console.close=true  clean
-    ## 生成测试报告
-  - mvn jacoco:report
-  ## 获取travis解密的token ,并调用coveralls-plugin上传报告
-  - mvn coveralls:report --batch-mode --quiet
+  - mvn -Dlog.console.close=true  clean generate-resources coveralls:report
 
 branches:
   only:
