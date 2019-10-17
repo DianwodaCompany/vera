@@ -64,7 +64,7 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
 //    delFile(storeDir);
   }
 
-  @Test
+  //@Test
   public void cleanRedisTest() throws Exception {
     PiperConfig piperConfig = mockPiperConfig();
 
@@ -128,7 +128,7 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
   }
 
 
-  @Test
+  //@Test
   public void pullCommandTest() throws Exception {
     PiperController piper = mockPiper();
     ListenRedisRequestHeader requestHeader = this.createListenRedisRequest(0);
