@@ -65,7 +65,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
   private int port = 0;
 
-  public NettyRemotingServer( NettyServerConfig nettyServerConfig,
+  public NettyRemotingServer( final NettyServerConfig nettyServerConfig,
                               ChannelEventListener channelEventListener) {
     super(nettyServerConfig.getServerOnewaySemaphoreValue(), nettyServerConfig.getServerAsyncSemaphoreValue());
     this.serverBootstrap = new ServerBootstrap();
@@ -97,7 +97,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     this.eventLoopGroupSelector = new NioEventLoopGroup(nettyServerConfig.getServerSelectorThreads(), new ThreadFactory() {
       private AtomicInteger threadIndex = new AtomicInteger(0);
-      private int threadTotal = nettyServerConfig.getServerSelectorThreads();
+      private final int threadTotal = nettyServerConfig.getServerSelectorThreads();
 
       @Override
       public Thread newThread(Runnable r) {
