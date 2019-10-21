@@ -2,6 +2,7 @@ package com.dianwoda.usercenter.vera.piper.service;
 
 import com.dianwoda.usercenter.vera.common.SystemClock;
 import com.dianwoda.usercenter.vera.common.ThreadFactoryImpl;
+import com.dianwoda.usercenter.vera.common.UtilAll;
 import com.dianwoda.usercenter.vera.common.message.CommandExt;
 import com.dianwoda.usercenter.vera.common.redis.command.RedisCommand;
 import com.dianwoda.usercenter.vera.piper.client.DefaultPullConsumerImpl;
@@ -26,7 +27,7 @@ public class ConsumeCommandOrderlyService {
   private final CommandListenerOrderly commandListener;
   private final ThreadPoolExecutor consumerPoolExecutor;
   private final ScheduledExecutorService scheduledExecutorService;
-  private final ScheduledExecutorService checkExecutorService;
+  private final ThreadPoolExecutor checkExecutorService;
   private CheckConsumeService checkConsumeService;
 
   public ConsumeCommandOrderlyService(DefaultPullConsumerImpl defaultPullConsumer, CommandListenerOrderly commandListener) {
@@ -35,7 +36,8 @@ public class ConsumeCommandOrderlyService {
     this.consumerPoolExecutor = new ThreadPoolExecutor(defaultPullConsumer.getConsumeThreadMin(), defaultPullConsumer.getConsumeThreadMax(),
             1000 * 60, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactoryImpl("ConsumerCommandThread_"));
     this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ConsumerCommandScheduleThread_"));
-    this.checkExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("CheckConsumeScheduleThread_"));
+    this.checkExecutorService = new ThreadPoolExecutor(4, 4, 1000 * 60,
+            TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactoryImpl("CheckConsumeThread_"));
     this.checkConsumeService = new CheckConsumeService();
   }
 
@@ -118,7 +120,8 @@ public class ConsumeCommandOrderlyService {
       this.firstDispatchFailTimes++;
 
       if (check()) {
-        log.info("CheckConsumeService submit ConsumeRequest");
+        log.info("CheckConsumeService submit ConsumeRequest, firstDispatchFailTimes:" + firstDispatchFailTimes +
+          ", firstDispatchFailTimestamp:" + UtilAll.timeMillisToHumanString2(firstDispatchFailTimestamp));
         ConsumeCommandOrderlyService.this.checkExecutorService.submit(new ConsumeRequest(processQueue));
         clean();
       }
@@ -133,6 +136,8 @@ public class ConsumeCommandOrderlyService {
 
     @Override
     public void run() {
+      long firstSatisfyTimestamp = -1;
+      int timeSpan = 1000 * 30;
       while (check) {
         try {
           if (count++ % 200 == 0 ) {
@@ -145,15 +150,29 @@ public class ConsumeCommandOrderlyService {
             continue;
           }
 
-          if ((this.processQueue.getMaxSpan() > DefaultPullConsumerImpl.pullThresholdForQueue ||
-                  this.processQueue.getMsgCount().get() > DefaultPullConsumerImpl.consumeConcurrentlyMaxSpan)
-                  && this.firstDispatchFailTimes > 0 && this.processQueue.isConsuming()) {
-
-            log.info("CheckConsumeService submit ConsumeRequest");
+          long maxSpan = this.processQueue.getMaxSpan();
+          int msgCount = this.processQueue.getMsgCount().get();
+          if ((maxSpan > DefaultPullConsumerImpl.pullThresholdForQueue ||
+                  msgCount > DefaultPullConsumerImpl.consumeConcurrentlyMaxSpan)
+                  && this.processQueue.isConsuming()) {
+            if (firstSatisfyTimestamp == -1) {
+              firstSatisfyTimestamp = SystemClock.now();
+              suspend(1200);
+              continue;
+            }
+            if (SystemClock.now() - firstSatisfyTimestamp < timeSpan) {
+              suspend(1200);
+              continue;
+            }
+            log.info("CheckConsumeService submit ConsumeRequest, maxSpan:" + maxSpan +
+                    ", msgCount:" + msgCount);
+            firstSatisfyTimestamp = -1;
             ConsumeCommandOrderlyService.this.checkExecutorService.submit(new ConsumeRequest(processQueue));
             clean();
             suspend(1500);
             continue;
+          } else {
+            firstSatisfyTimestamp = -1;
           }
           suspend(1200);
         } catch (Exception e) {

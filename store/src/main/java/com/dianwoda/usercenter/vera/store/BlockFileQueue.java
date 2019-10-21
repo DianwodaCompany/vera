@@ -81,7 +81,7 @@ public class BlockFileQueue  {
       return null;
     }
     try {
-      int index = (int)(offset/this.blockFileSize - (int)firstOffset/this.blockFileSize);
+      int index = (int)(offset/this.blockFileSize - firstOffset/this.blockFileSize);
       if (index >= this.blockFiles.size()) {
         log.error(String.format("offset too big, can't match. offset:%d, blockfile size:%d, index:%d", offset,
                 this.blockFiles.size(), index));

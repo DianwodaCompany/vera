@@ -1,6 +1,5 @@
 package com.dianwoda.usercenter.vera.piper;
 
-import com.dianwoda.usercenter.vera.common.SystemClock;
 import com.dianwoda.usercenter.vera.common.message.CommandDecoder;
 import com.dianwoda.usercenter.vera.common.message.CommandExt;
 import com.dianwoda.usercenter.vera.common.message.GetCommandStatus;
@@ -9,18 +8,17 @@ import com.dianwoda.usercenter.vera.common.redis.command.RedisCommand;
 import com.dianwoda.usercenter.vera.common.util.IPUtil;
 import com.dianwoda.usercenter.vera.common.util.NetUtils;
 import com.dianwoda.usercenter.vera.piper.client.ProcessQueue;
-import com.dianwoda.usercenter.vera.piper.client.PullAPIWrapper;
 import com.dianwoda.usercenter.vera.piper.client.protocal.PullResultExt;
 import com.dianwoda.usercenter.vera.piper.client.protocal.SyncPiperPullRequest;
 import com.dianwoda.usercenter.vera.piper.config.PiperConfig;
-import com.dianwoda.usercenter.vera.piper.enums.CommunicationMode;
 import com.dianwoda.usercenter.vera.piper.enums.PullStatus;
 import com.dianwoda.usercenter.vera.piper.redis.command.CommandType;
 import com.dianwoda.usercenter.vera.piper.redis.serializer.RedisCommandDeserializer;
+import com.dianwoda.usercenter.vera.piper.redis.serializer.RedisCommandSerializer;
 import com.dianwoda.usercenter.vera.remoting.netty.NettyServerConfig;
 import com.dianwoda.usercenter.vera.store.DefaultCommandStore;
 import com.dianwoda.usercenter.vera.store.GetCommandResult;
-import com.dianwoda.usercenter.vera.store.io.ObjectDeserializer;
+import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +30,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.moilioncircle.redis.replicator.Status.CONNECTED;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author seam
@@ -49,8 +48,10 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
   private String password = "foobared";
   private List<String> sentinels = new ArrayList();
   private File storeDir = new File(storePath);
-
-  ObjectDeserializer<RedisCommand> deserializer = new RedisCommandDeserializer();
+  private static String key = "key1";
+  private static String value = "value1";
+  RedisCommandSerializer serializer = new RedisCommandSerializer();
+  RedisCommandDeserializer deserializer = new RedisCommandDeserializer();
 
   @Before
   public void before() {
@@ -62,6 +63,17 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
   @After
   public void after() {
 //    delFile(storeDir);
+  }
+
+  @Test
+  public void serializerTest() {
+
+    RedisCommand command = this.createRedisCommand();
+    byte[] data = serializer.serialize(command);
+
+    RedisCommand newCommand = deserializer.deserialize(data);
+    TestCase.assertTrue(new String(command.getKey()).equals(new String(newCommand.getKey())) &&
+          new String(command.getValue()).equals(new String(newCommand.getValue())));
   }
 
   //@Test
@@ -280,5 +292,13 @@ public class PiperOperationTest extends com.dianwoda.usercenter.vera.piper.UnitT
     when(piperConfig.nameLocation()).thenReturn(nameLocation);
     when(piperConfig.location()).thenReturn(IPUtil.getServerIp() + ":" + PIPER_BIND_PORT);
     return piperConfig;
+  }
+
+  private RedisCommand createRedisCommand() {
+    RedisCommand command = new RedisCommand();
+    command.setKey(key.getBytes());
+    command.setValue(value.getBytes());
+    command.setType(CommandType.SET.getValue());
+    return command;
   }
 }
