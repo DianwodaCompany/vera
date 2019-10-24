@@ -107,6 +107,7 @@ Thanks for all the people who contributed to Vera !
 <br>
 <img class="avatar" src="https://avatars0.githubusercontent.com/u/7858413?s=96&amp;v=4" width="48" height="48" alt="@ainihong001">
 <img class="avatar" src="https://avatars2.githubusercontent.com/u/20179128?s=96&amp;v=4" width="48" height="48" alt="@yueyeliuxing">
+<img class="avatar" src="https://avatars1.githubusercontent.com/u/54735957?s=460&v=4" width="48" height="48" alt="@gammabin">
 </a>
 
 <a name="Todolist"></a>
