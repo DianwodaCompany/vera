@@ -41,7 +41,8 @@ Redis 在点我达内部得到了广泛的使用，根据运维数据统计，�
 
 -  Console：用来提供用户界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
 -  NamerServer：各Piper信息与各任务执行情况的集中维护，主要是通过Piper的心跳上报；
--  Piper:Vera中最主要的结点，主要功能如下：1) Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；2) 同步其它Piper的数据并写入本地Redis Master中； 所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis Cluster;
+-  Piper:Vera中最主要的结点，主要功能如下：
+- - 1) Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；2) 同步其它Piper的数据并写入本地Redis Master中； 所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis Cluster;
 
 <a name="redis-多主数据同步问题"></a>
 ## Redis 多主数据同步问题
