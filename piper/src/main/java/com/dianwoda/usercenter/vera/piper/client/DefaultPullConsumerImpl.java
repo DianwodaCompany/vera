@@ -189,7 +189,8 @@ public class DefaultPullConsumerImpl {
     };
 
     try {
-      this.pullAPIWrapper.pullKernelImpl(pullRequest.getTargetLocation(), pullRequest.getNextOffset(),
+      this.pullAPIWrapper.pullKernelImpl(pullRequest.getTargetLocation(),
+              pullRequest.getTargetGroup(), pullRequest.getNextOffset(),
               pullRequest.getCommitOffset(), true, pullBatchSize, PIPER_SUSPEND_MAX_TIME_MILLIS, CommunicationMode.ASYNC, pullCallback);
     } catch (Exception e) {
       log.error("pullKernelImpl exception", e);

@@ -110,7 +110,10 @@ public class IndexController {
       return interResponse;
     }
     PiperData piperData = routeInfoManager.getPiperData(location);
-    return this.defaultAdminExtImpl.addAction(Action.buildSyncPiperAction(piperData, syncPiperLocation));
+    PiperData syncPiperData = routeInfoManager.getPiperData(syncPiperLocation);
+    Preconditions.checkNotNull(piperData);
+    Preconditions.checkNotNull(syncPiperData);
+    return this.defaultAdminExtImpl.addAction(Action.buildSyncPiperAction(piperData, syncPiperData));
   }
 
 
@@ -134,7 +137,9 @@ public class IndexController {
 
     Preconditions.checkNotNull(location);
     Preconditions.checkNotNull(syncPiperLocation);
-    return this.defaultAdminExtImpl.syncPiper(location, syncPiperLocation, 2);
+    RouteInfoManager routeInfoManager = RouteInfoManager.getIntance();
+    PiperData syncPiperData = routeInfoManager.getPiperData(syncPiperLocation);
+    return this.defaultAdminExtImpl.syncPiper(location, syncPiperLocation, syncPiperData.getGroup(), 2);
   }
 
   @RequestMapping("runningInfo")

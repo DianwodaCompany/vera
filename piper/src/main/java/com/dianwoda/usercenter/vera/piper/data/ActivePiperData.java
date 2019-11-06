@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author seam
  */
 public class ActivePiperData {
-  private Map<String, PiperData> piperDataMap = new ConcurrentHashMap<>();
+  private Map<String /* location */, PiperData> piperDataMap = new ConcurrentHashMap<>();
   private long updateTime;
 
   public boolean containPiperData(PiperData piperData) {
@@ -62,4 +62,6 @@ public class ActivePiperData {
   public Collection<PiperData> values() {
     return piperDataMap.values();
   }
+
+
 }

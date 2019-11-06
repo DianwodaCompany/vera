@@ -109,64 +109,23 @@ public class BlockFile extends ReferenceResource {
     }
   }
 
-  public SelectMappedBufferResult queryCommand(long offset) {
-    int readPosition = getReadPosition();
-    if (offset >= getFileFromOffset() + readPosition) {
-      return null;
-    } else if (offset > getFileFromOffset() + this.fileSize) {
-      return null;
-    }
-    int totalSize = 0;
-    long newOffset = offset % this.fileSize;
-    try {
+  public boolean appendCommand(final byte[] data) {
+    int currentPos = this.wrotePosition.get();
+    if ((currentPos + data.length) <= this.fileSize) {
+      try {
+        this.fileChannel.position(currentPos);
+        this.fileChannel.write(ByteBuffer.wrap(data));
 
-      ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
-      byteBuffer.position((int) newOffset);
-      ByteBuffer transferBuffer = byteBuffer.slice();
-      // 1 total size
-      totalSize = byteBuffer.getInt();
-      // 2 magic code
-      int magicCode = byteBuffer.getInt();
-      if (magicCode != Common.MESSAGE_MAGIC_CODE) {
-        return null;
+      } catch (Throwable e) {
+        log.error("appendCommand error", e);
       }
-      // 3 crc
-      int crc = byteBuffer.getInt();
-      // 4 store timestamp
-      long storeTimestamp = byteBuffer.getLong();
-      // 5 logic offset
-      long logicOffset = byteBuffer.getLong();
-      // 6 store offset
-      long storeOffset = byteBuffer.getLong();
-      // 7 data for test
-      // 7 data length
-      int dataLength = byteBuffer.getInt();
-      ByteBuffer dataBuffer = ByteBuffer.allocate(dataLength);
-      for (int i = 0; i < dataLength; i++) {
-        dataBuffer.put(byteBuffer.get(i));
-      }
-      // debug
-      String data = new String(dataBuffer.array());
-      log.info("file name:" + this.getFileName() + " Content:" +
-              data.substring(0, Math.min(data.length(), 100)) + " offset:" + offset +
-              " datalen:" + dataLength + " totalSize:" + totalSize + " canreadposition:" + readPosition);
-      // data for test end
-      if (this.hold()) {
-        return new SelectMappedBufferResult(transferBuffer, offset, totalSize, this);
-      } else {
-        log.warn("matched, but hold failed, request pos: " + offset + ", fileFromOffset: "
-                + this.fileFromOffset);
-      }
-
-    } catch (Exception e){
-      log.error(String.format("Error occurred when Read offset in blockfile, name:%s, offset:%d, size:%d, canreadpoint:%d",
-              this.fileName, offset, totalSize, readPosition), e);
+      this.wrotePosition.addAndGet(data.length);
+      return true;
     }
-    return null;
+    return false;
   }
 
   public SelectMappedBufferResult queryCommand(long offset, int num) {
-
     int relativeOffset = (int) (offset % this.fileSize);
     ByteBuffer operBuffer = this.mappedByteBuffer.slice();
     operBuffer.position(relativeOffset);
@@ -190,6 +149,7 @@ public class BlockFile extends ReferenceResource {
       }
       // 3 crc
       int crc = operBuffer.getInt();
+
       // 4 store timestamp
       long storeTimestamp = operBuffer.getLong();
       // 5 logic offset
@@ -227,6 +187,28 @@ public class BlockFile extends ReferenceResource {
     }
     return null;
   }
+
+  public SelectMappedBufferResult queryCommand(long offset) {
+    int relativeOffset = (int) (offset % this.fileSize);
+
+    int readPosition = this.getReadPosition();
+    if (relativeOffset < readPosition && relativeOffset >= 0) {
+      ByteBuffer operBuffer = this.mappedByteBuffer.slice();
+      operBuffer.position(relativeOffset);
+      ByteBuffer dataBuffer = operBuffer.slice();
+      int size = readPosition - relativeOffset;
+      dataBuffer.limit(size);
+
+      if (this.hold()) {
+        return new SelectMappedBufferResult(dataBuffer, offset, size, this);
+      } else {
+        log.warn("matched, but hold failed, request pos: " + offset + ", fileFromOffset: "
+                + this.fileFromOffset);
+      }
+    }
+    return null;
+  }
+
 
   public boolean isFull() {
     return this.wrotePosition.get() >= this.fileSize;

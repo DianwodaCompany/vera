@@ -40,14 +40,14 @@
     <parent>
         <groupId>com.dianwoda.usercenter.vera</groupId>
         <artifactId>vera</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
     <artifactId>common</artifactId>
     <packaging>jar</packaging>
     <name>vera-common</name>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
 
     <properties>
         <slf4j.version>1.7.12</slf4j.version>
@@ -95,6 +95,11 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
         </dependency>
 
     </dependencies>

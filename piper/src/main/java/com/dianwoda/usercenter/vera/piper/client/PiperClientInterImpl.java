@@ -166,13 +166,14 @@ public class PiperClientInterImpl {
     return false;
   }
 
-  public synchronized boolean syncPiperInitial(String location) {
-    this.syncPiperStateMap.put(location, TaskState.TASK_SYNC_PIPER_INITIAL);
+  public synchronized boolean syncPiperInitial(String syncPiperLocation) {
+    this.syncPiperStateMap.put(syncPiperLocation, TaskState.TASK_SYNC_PIPER_INITIAL);
     return true;
   }
 
   public synchronized boolean syncPiperRunning(SyncPiperRequestHeader requestHeader) {
     String syncPiperLocation = requestHeader.getSyncPiperLocation();
+    String syncPiperGroup = requestHeader.getSyncPiperGroup();
     ConsumerOffsetManager consumerOffsetManager = this.piperClientInstance.getPiperController().getOffsetManager();
     long commitOffset = consumerOffsetManager.getOffset(syncPiperLocation);
 
@@ -194,6 +195,7 @@ public class PiperClientInterImpl {
     pullRequest.setNextOffset(nextOffset);
     pullRequest.setCommitOffset(nextOffset);
     pullRequest.setTargetLocation(syncPiperLocation);
+    pullRequest.setTargetGroup(syncPiperGroup);
     ProcessQueue pq = this.createProcessQueue(syncPiperLocation);
     pullRequest.setProcessQueue(pq);
     this.piperClientInstance.getPiperController().getOffsetManager().

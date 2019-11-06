@@ -4,11 +4,13 @@ import com.dianwoda.usercenter.vera.common.ThreadFactoryImpl;
 import com.dianwoda.usercenter.vera.common.protocol.body.RegisterPiperResult;
 import com.dianwoda.usercenter.vera.common.protocol.RequestCode;
 import com.dianwoda.usercenter.vera.common.protocol.hearbeat.PiperTaskData;
+import com.dianwoda.usercenter.vera.common.protocol.route.PiperData;
 import com.dianwoda.usercenter.vera.piper.client.CircleDisposeHandler;
 import com.dianwoda.usercenter.vera.piper.client.DefaultCircleDisposeHandler;
 import com.dianwoda.usercenter.vera.piper.client.listener.NotifyCommandArriveListener;
 import com.dianwoda.usercenter.vera.piper.client.PiperClientInstance;
 import com.dianwoda.usercenter.vera.piper.config.PiperConfig;
+import com.dianwoda.usercenter.vera.piper.ha.HAService;
 import com.dianwoda.usercenter.vera.piper.longpolling.PullRequestHoldService;
 import com.dianwoda.usercenter.vera.piper.offset.ConsumerOffsetManager;
 import com.dianwoda.usercenter.vera.piper.processor.DefaultPiperMessageProcessor;
@@ -26,7 +28,10 @@ import com.dianwoda.usercenter.vera.store.stats.PiperStatsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * @author seam
@@ -50,6 +55,7 @@ public class PiperController {
   private boolean updateMasterHAServerAddrPeriodically = false;
   private CircleDisposeHandler circleDisposeHandler;
   private PiperClientInstance piperClientInstance;
+  private HAService haService;
 
   public PiperController(PiperConfig piperConfig) {
     this.piperConfig = piperConfig;
@@ -63,6 +69,7 @@ public class PiperController {
     this.defaultPiperMessageProcessor = new DefaultPiperMessageProcessor(this);
     this.circleDisposeHandler = new DefaultCircleDisposeHandler();
     this.piperClientInstance = new PiperClientInstance(this, this.offsetManager);
+    this.haService = new HAService(this, this.piperConfig);
   }
 
   public boolean initialize() {
@@ -108,6 +115,8 @@ public class PiperController {
     this.scheduledExecutorService.scheduleAtFixedRate(() -> {
       PiperController.this.registerPiper(false);
     }, 1000*10, 1000 * 10, TimeUnit.MILLISECONDS);
+
+    this.haService.start();
   }
 
   public void shutdown() {
@@ -178,8 +187,6 @@ public class PiperController {
     return circleDisposeHandler;
   }
 
-
-
   public ConsumerOffsetManager getOffsetManager() {
     return offsetManager;
   }
@@ -187,4 +194,14 @@ public class PiperController {
   public PiperClientInstance getPiperClientInstance() {
     return piperClientInstance;
   }
+
+  public Map<String /* group */, List<PiperData>> getActivePiperBaseGroup() {
+    Map<String /* location */, PiperData> piperDataMap = this.piperClientInstance.getActivePiperData().getPiperDataMap();
+
+    Map<String /* group */, List<PiperData>> map = piperDataMap.values().stream().collect(
+            Collectors.groupingBy(pipData -> pipData.getGroup())
+    );
+    return map;
+  }
+
 }

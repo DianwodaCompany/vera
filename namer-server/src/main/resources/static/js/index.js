@@ -39,8 +39,9 @@ $(document).ready(function () {
                 return a + '<br>' + b;
 
             } else {
+                var a = '<a  class="listenBtn"  data-rowLocation=' + row.location + ' data-toggle="modal" data-target="" onclick="listen(\'' + row + '\')">Redis侦听</a> ';
                 var c = '<a  class="copyBtn"  data-rowLocation=' + row.location + ' data-toggle="modal" data-target="" onclick="copy(\'' + row + '\')">主从复制</a> ';
-                return c;
+                return a + '<br>' + c;
             }
         }
     }, {

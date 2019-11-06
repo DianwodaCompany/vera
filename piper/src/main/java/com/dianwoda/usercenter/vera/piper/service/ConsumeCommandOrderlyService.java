@@ -140,7 +140,7 @@ public class ConsumeCommandOrderlyService {
       int timeSpan = 1000 * 30;
       while (check) {
         try {
-          if (count++ % 200 == 0 ) {
+          if (++count % 500 == 0 ) {
             log.info("CheckConsumeService start checking");
             count = 0;
           }

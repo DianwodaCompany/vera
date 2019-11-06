@@ -1,5 +1,8 @@
 package com.dianwoda.usercenter.vera.common.protocol.route;
 
+import com.dianwoda.usercenter.vera.common.enums.Role;
+import com.google.common.net.HostAndPort;
+
 /**
  * @author seam
  */
@@ -9,6 +12,10 @@ public class PiperData {
   private String group;
   private int piperId;
   private String hostName;
+
+  public PiperData() {
+
+  }
 
   public PiperData(String location, String group, int piperId, String hostName) {
     this.location = location;
@@ -37,6 +44,10 @@ public class PiperData {
     return piperId;
   }
 
+  public Role getRole() {
+    return getPiperId() == 0 ? Role.MASTER : Role.SLAVE;
+  }
+
   public void setPiperId(int piperId) {
     this.piperId = piperId;
   }
@@ -59,5 +70,15 @@ public class PiperData {
       return true;
     }
     return false;
+  }
+
+  public HostAndPort getMasterHostAndPort() {
+    HostAndPort my = HostAndPort.fromString(location);
+    return HostAndPort.fromParts(my.getHostText(), my.getPort() + 2);
+  }
+
+  @Override
+  public String toString() {
+    return "location:" + location + ", piperId:" + piperId + ", group:" + group + ", hostname:" + hostName;
   }
 }

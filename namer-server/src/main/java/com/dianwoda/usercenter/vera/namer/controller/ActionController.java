@@ -44,7 +44,7 @@ public class ActionController {
       actionInfoDTOList.add(actionInfo);
     }
     actionInfoDTOList = actionInfoDTOList.stream().filter(a ->
-            StringUtils.isEmpty(searchText) ? true : a.getSrcPiperData().getLocation().equals(searchText))
+            StringUtils.isEmpty(searchText) ? true : a.getLocation().equals(searchText))
             .sorted(Comparator.comparing(ActionInfoDTO::getId).reversed())
             .collect(Collectors.toList());
 

@@ -35,8 +35,8 @@ public class DefaultAdminExtImpl {
     return toolsManager.redisListen(location, masterName, sentinels, password, operationType);
   }
 
-  public RemotingCommand syncPiper(String srcLocation, String syncPiperLocation, int operationType) {
-    return toolsManager.syncPiper(srcLocation, syncPiperLocation, operationType);
+  public RemotingCommand syncPiper(String srcLocation, String syncPiperLocation, String group, int operationType) {
+    return toolsManager.syncPiper(srcLocation, syncPiperLocation, group, operationType);
   }
 
   public InterResponse addAction(Action action) {

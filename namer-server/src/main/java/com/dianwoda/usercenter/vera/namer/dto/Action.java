@@ -20,6 +20,7 @@ public class Action {
   private List<String> sentinelList;
   private String password;
   private String syncPiperLocation;
+  private String syncPiperGroup;
   private long createTime;
   private long updateTime;
   private String srcLocation;
@@ -42,23 +43,24 @@ public class Action {
     action.createTime = SystemClock.now();
     action.updateTime = action.createTime;
     action.srcLocation = srcPiperData.getLocation();
-    action.actionStateEnum = ActionStateEnum.DEFAULT;
     action.group = srcPiperData.getGroup();
+    action.actionStateEnum = ActionStateEnum.DEFAULT;
     action.piperId = srcPiperData.getPiperId();
     return action;
   }
 
-  public static Action buildSyncPiperAction(PiperData srcPiperData, String syncPiperLocation) {
+  public static Action buildSyncPiperAction(PiperData srcPiperData, PiperData syncPiperData) {
     Integer id = Action.actionIncr.getAndIncrement();
     Action action = new Action();
     action.id = id;
     action.actionTaskEnum = ActionTaskEnum.SYNC_PIPER_ACTION;
-    action.syncPiperLocation = syncPiperLocation;
+    action.syncPiperLocation = syncPiperData.getLocation();
+    action.syncPiperGroup = syncPiperData.getGroup();
     action.createTime = SystemClock.now();
     action.updateTime = action.createTime;
     action.srcLocation = srcPiperData.getLocation();
-    action.actionStateEnum = ActionStateEnum.DEFAULT;
     action.group = srcPiperData.getGroup();
+    action.actionStateEnum = ActionStateEnum.DEFAULT;
     action.piperId = srcPiperData.getPiperId();
     return action;
   }
@@ -159,5 +161,13 @@ public class Action {
 
   public void setUpdateTime(long updateTime) {
     this.updateTime = updateTime;
+  }
+
+  public String getSyncPiperGroup() {
+    return syncPiperGroup;
+  }
+
+  public void setSyncPiperGroup(String syncPiperGroup) {
+    this.syncPiperGroup = syncPiperGroup;
   }
 }

@@ -33,6 +33,9 @@ public class SyncPiperRequestHeader implements CommandCustomHeader {
   private Integer operateType;    // 0 初始化，1 运行, 2 停止
 
   @CFNotNull
+  private String syncPiperGroup;
+
+  @CFNotNull
   private int consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET.getCode();
 
   public Integer getOperateType() {
@@ -63,5 +66,13 @@ public class SyncPiperRequestHeader implements CommandCustomHeader {
 
   public void setConsumeFromWhere(int consumeFromWhere) {
     this.consumeFromWhere = consumeFromWhere;
+  }
+
+  public String getSyncPiperGroup() {
+    return syncPiperGroup;
+  }
+
+  public void setSyncPiperGroup(String syncPiperGroup) {
+    this.syncPiperGroup = syncPiperGroup;
   }
 }

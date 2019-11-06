@@ -28,7 +28,6 @@ import com.dianwoda.usercenter.vera.remoting.exception.RemotingCommandException;
 public class PullMessageRequestHeader implements CommandCustomHeader {
   @CFNotNull
   private String location;
-
   @CFNotNull
   private Long readOffset;
   @CFNotNull
@@ -92,7 +91,5 @@ public class PullMessageRequestHeader implements CommandCustomHeader {
   public void setSuspendTimeoutMillis(Long suspendTimeoutMillis) {
     this.suspendTimeoutMillis = suspendTimeoutMillis;
   }
-
-
 
 }

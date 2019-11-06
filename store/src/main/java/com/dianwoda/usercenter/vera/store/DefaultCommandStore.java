@@ -262,17 +262,40 @@ public class DefaultCommandStore implements CommandStore {
   @Override
   public PutCommandResult appendCommand(byte[] data) {
     BlockFile blockFile = this.blockFileQueue.getLastBlockFile();
+    if (blockFile == null || blockFile.isFull()) {
+      blockFile = this.blockFileQueue.getLastBlockFile(0, true);
+    }
+    if (blockFile == null) {
+      log.error("create block file error, data: {}", data);
+      return new PutCommandResult(PutCommandStatus.CREATE_BLOCKFILE_FAILED, null);
+    }
+    return this.appendCommand(blockFile, data);
+  }
+
+  @Override
+  public boolean appendCommandToBlockFile(long phyOffset, byte[] data) {
+    BlockFile blockFile = this.blockFileQueue.findBlockFileByOffset(phyOffset);
+    if (blockFile == null || blockFile.isFull()) {
+      blockFile = this.blockFileQueue.getLastBlockFile(phyOffset, true);
+    }
+    if (blockFile == null) {
+      log.error("create block file error, data: {}", data);
+      return false;
+    }
+    putCommandLock.lock();
+    try {
+      return blockFile.appendCommand(data);
+    } finally {
+      putCommandLock.unlock();
+    }
+  }
+
+
+  private PutCommandResult appendCommand(BlockFile blockFile, byte[] data) {
+    assert blockFile != null;
     AppendCommandResult result = null;
     putCommandLock.lock();
-
     try {
-      if (blockFile == null || blockFile.isFull()) {
-        blockFile = this.blockFileQueue.getLastBlockFile(0, true);
-      }
-      if (blockFile == null) {
-        log.error("create block file error, data: {}", data);
-        return new PutCommandResult(PutCommandStatus.CREATE_BLOCKFILE_FAILED, null);
-      }
       result = blockFile.appendCommand(data, this.callBack);
       switch (result.getStatus()) {
         case PUT_OK:
@@ -421,6 +444,19 @@ public class DefaultCommandStore implements CommandStore {
     result.setStatus(status);
     return result;
   }
+
+  @Override
+  public SelectMappedBufferResult getCommand(long offset) {
+    BlockFile blockFile = blockFileQueue.findBlockFileByOffset(offset);
+    if (blockFile != null) {
+      return blockFile.queryCommand(offset);
+    } else {
+      log.error("find blockfile error, offset:" + offset);
+    }
+    return null;
+  }
+
+
 
   public long rollNextFile(final long offset) {
     return blockFileSize + offset - offset % blockFileSize;

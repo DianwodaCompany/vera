@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>com.dianwoda.usercenter.vera</groupId>
 		<artifactId>vera</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 
 	<artifactId>piper</artifactId>
 	<packaging>jar</packaging>
 	<name>vera-piper</name>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
 
     <properties>
         <!-- 指定启动类 -->

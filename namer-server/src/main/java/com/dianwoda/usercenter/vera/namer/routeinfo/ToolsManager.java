@@ -3,9 +3,7 @@ package com.dianwoda.usercenter.vera.namer.routeinfo;
 import com.dianwoda.usercenter.vera.common.enums.ConsumeFromWhere;
 import com.dianwoda.usercenter.vera.common.protocol.RequestCode;
 import com.dianwoda.usercenter.vera.common.protocol.ResponseCode;
-import com.dianwoda.usercenter.vera.common.protocol.body.ConsumerRunningInfo;
 import com.dianwoda.usercenter.vera.common.protocol.header.*;
-import com.dianwoda.usercenter.vera.common.protocol.hearbeat.PiperTaskData;
 import com.dianwoda.usercenter.vera.namer.NamerFactory;
 import com.dianwoda.usercenter.vera.namer.tools.PiperClient;
 import com.dianwoda.usercenter.vera.remoting.protocol.RemotingCommand;
@@ -60,7 +58,7 @@ public class ToolsManager {
     return response;
   }
 
-  public RemotingCommand syncPiper(String srcLocation, String syncPiperLocation, int operationType) {
+  public RemotingCommand syncPiper(String srcLocation, String syncPiperLocation, String syncPiperGroup, int operationType) {
     RemotingCommand response = null;
     Map<String, RouteInfoManager.PiperLiveInfo> piperLiveMap =
             this.routeInfoManager.getPiperLiveInfoMap();
@@ -74,6 +72,7 @@ public class ToolsManager {
       SyncPiperRequestHeader requestHeader = new SyncPiperRequestHeader();
       requestHeader.setSyncPiperLocation(syncPiperLocation);
       requestHeader.setOperateType(operationType);
+      requestHeader.setSyncPiperGroup(syncPiperGroup);
       requestHeader.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET.getCode());
       RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.SYNC_PIPER, requestHeader);
       try {

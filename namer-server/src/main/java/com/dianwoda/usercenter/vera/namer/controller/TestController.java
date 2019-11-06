@@ -32,9 +32,10 @@ public class TestController {
   @RequestMapping("/syncPiper")
   @ResponseBody
   public Object syncPiper(@RequestParam(name="operateType") int operateType) {
-    String srcLocation = "192.168.102.254:8025";
-    String syncLocation = "192.168.102.254:8026";
-    return defaultAdminExtImpl.syncPiper(srcLocation, syncLocation, operateType);
+    String srcLocation = "192.168.102.254:16571";
+    String syncLocation = "192.168.102.254:16591";
+    String group = "hz-unit2";
+    return defaultAdminExtImpl.syncPiper(srcLocation, syncLocation, group, operateType);
   }
 
 
@@ -53,8 +54,9 @@ public class TestController {
   @RequestMapping("/syncPiper2")
   @ResponseBody
   public Object syncPiper2(@RequestParam(name="operateType") int operateType) {
-    String srcLocation = "192.168.102.254:8026";
-    String syncLocation = "192.168.102.254:8025";
-    return defaultAdminExtImpl.syncPiper(srcLocation, syncLocation, operateType);
+    String srcLocation = "192.168.102.254:16591";
+    String syncLocation = "192.168.102.254:16571";
+    String group = "hz-unit1";
+    return defaultAdminExtImpl.syncPiper(srcLocation, syncLocation, group, operateType);
   }
 }

@@ -62,7 +62,8 @@ public class ActionManager {
 
           // sync piper process
         } else if (action.getActionTaskEnum() == ActionTaskEnum.SYNC_PIPER_ACTION){
-          RemotingCommand response = this.toolsManager.syncPiper(action.getSrcLocation(), action.getSyncPiperLocation(), (short)0);
+          RemotingCommand response = this.toolsManager.syncPiper(action.getSrcLocation(),
+                  action.getSyncPiperLocation(), action.getSyncPiperGroup(), (short)0);
           if (response.getCode() == ResponseCode.SUCCESS) {
             return this.actionRecordManager.actonAgree(id);
 
@@ -104,7 +105,8 @@ public class ActionManager {
 
         // sync piper process
         } else if (action.getActionTaskEnum() == ActionTaskEnum.SYNC_PIPER_ACTION){
-          RemotingCommand response = this.toolsManager.syncPiper(action.getSrcLocation(), action.getSyncPiperLocation (), (short)1);
+          RemotingCommand response = this.toolsManager.syncPiper(action.getSrcLocation(),
+                  action.getSyncPiperLocation (), action.getSyncPiperGroup(), (short)1);
           if (response.getCode() == ResponseCode.SUCCESS) {
             return this.actionRecordManager.actonStart(id);
 
@@ -145,7 +147,8 @@ public class ActionManager {
 
         // sync piper process
       } else if (action.getActionTaskEnum() == ActionTaskEnum.SYNC_PIPER_ACTION) {
-        response = this.toolsManager.syncPiper(action.getSrcLocation(), action.getSyncPiperLocation(), (short)2);
+        response = this.toolsManager.syncPiper(action.getSrcLocation(),
+                action.getSyncPiperLocation(), action.getSyncPiperGroup(), (short)2);
       }
       if (response != null && response.getCode() == ResponseCode.SUCCESS) {
         return this.actionRecordManager.actionReject(action.getId());

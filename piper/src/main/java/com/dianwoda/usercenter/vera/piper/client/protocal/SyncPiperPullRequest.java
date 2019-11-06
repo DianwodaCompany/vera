@@ -7,6 +7,7 @@ import com.dianwoda.usercenter.vera.piper.client.ProcessQueue;
  */
 public class SyncPiperPullRequest {
   private String targetLocation;
+  private String targetGroup;
   private long nextOffset;
   private long commitOffset;
   private ProcessQueue processQueue;
@@ -46,5 +47,13 @@ public class SyncPiperPullRequest {
 
   public void setCommitOffset(long commitOffset) {
     this.commitOffset = commitOffset;
+  }
+
+  public String getTargetGroup() {
+    return targetGroup;
+  }
+
+  public void setTargetGroup(String targetGroup) {
+    this.targetGroup = targetGroup;
   }
 }

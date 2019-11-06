@@ -14,9 +14,9 @@ $(document).ready(function () {
         title: '源Piper',
         align: 'center',
         formatter: function (value, row, index) {
-            var location = row.srcPiperData.location;
-            var group = row.srcPiperData.group;
-            var id = row.srcPiperData.piperId;
+            var location = row.location;
+            var group = row.group;
+            var id = row.piperId;
             return location + '<br>' + group + '<br>' + (id == 0 ? 'Master' : 'Slave');
         }
     }, {

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -40,7 +41,7 @@ public class PiperClientInstance {
   private final NettyClientConfig nettyClientConfig;
   private ConsumerStatsManager consumerStatsManager;
   private ConsumerOffsetManager offsetManager;
-  private ActivePiperData activePiperData = new ActivePiperData();
+  private volatile ActivePiperData activePiperData = new ActivePiperData();
   private ReentrantLock namerOperLock = new ReentrantLock();
   private PiperConfig piperConfig;
   private PiperController piperController;
@@ -55,7 +56,7 @@ public class PiperClientInstance {
   private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
     @Override
     public Thread newThread(Runnable r) {
-      return new Thread(r, "PiperClientInstanceScheduledThread");
+      return new Thread(r, "PiperClientInstanceScheduledThread_");
     }
   });
 
@@ -84,7 +85,12 @@ public class PiperClientInstance {
     this.pullMessageService.start();
     scheduledExecutorService.scheduleAtFixedRate(() -> {
       PiperClientInstance.this.updatePiperInfoFromNamer();
-    }, 1000 * 60, 1000 * 60 * 2, TimeUnit.MILLISECONDS);
+    }, 1000 * 10, 1000 * 10 * 2, TimeUnit.MILLISECONDS);
+
+    scheduledExecutorService.scheduleAtFixedRate(() -> {
+      PiperClientInstance.this.printActivePiperData();
+    }, 1000 * 10, 1000 * 10 * 2, TimeUnit.MILLISECONDS);
+
   }
 
   public void stop() {
@@ -118,7 +124,7 @@ public class PiperClientInstance {
         List<PiperData> needRemove = new ArrayList<PiperData>();
         Collection<PiperData> values = this.activePiperData.values();
         for (PiperData value : values) {
-          if (piperAllData.getPiperDataList().contains(value)) {
+          if (!piperAllData.getPiperDataList().contains(value)) {
             needRemove.add(value);
           }
         }
@@ -131,6 +137,8 @@ public class PiperClientInstance {
     } catch (PiperException e) {
       log.error("updatePiperInfoFromNamer error", e);
     } catch (RemotingException e) {
+      log.error("updatePiperInfoFromNamer error", e);
+    } catch (Exception e) {
       log.error("updatePiperInfoFromNamer error", e);
     } finally {
       namerOperLock.unlock();
@@ -180,5 +188,15 @@ public class PiperClientInstance {
 
   public boolean isSyncCommandFilterSwitch() {
     return syncCommandFilterSwitch;
+  }
+
+  public void printActivePiperData() {
+    Map<String, PiperData> piperDataMap = activePiperData.getPiperDataMap();
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, PiperData> entry : piperDataMap.entrySet()) {
+      sb.append(", Data:" + entry.getValue());
+    }
+
+    log.info("Active Piper Data Info:" + sb.toString());
   }
 }

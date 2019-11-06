@@ -40,14 +40,14 @@
     <parent>
         <groupId>com.dianwoda.usercenter.vera</groupId>
         <artifactId>vera</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
     <artifactId>store</artifactId>
     <packaging>jar</packaging>
     <name>vera-store</name>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
 
     <properties>
         <slf4j.version>1.7.12</slf4j.version>

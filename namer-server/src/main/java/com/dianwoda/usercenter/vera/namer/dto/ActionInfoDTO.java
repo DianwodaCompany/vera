@@ -14,7 +14,10 @@ public class ActionInfoDTO {
 
   private int id;
   private ActionTaskEnum actionTaskEnum;
-  private PiperData srcPiperData;
+  private String location;
+  private String group;
+  private int piperId;
+
   // redis or location ?
   private String operand;
 
@@ -26,7 +29,9 @@ public class ActionInfoDTO {
     this.id = action.getId();
     this.actionTaskEnum = action.getActionTaskEnum();
     RouteInfoManager routeInfoManager = RouteInfoManager.getIntance();
-    this.srcPiperData = routeInfoManager.getPiperData(action.getSrcLocation());
+    this.location = action.getSrcLocation();
+    this.group = action.getGroup();
+    this.piperId = action.getPiperId();
     if (this.actionTaskEnum == ActionTaskEnum.LISTEN_REDIS_ACTION) {
       String temp = action.getSentinelList().stream().collect(Collectors.joining("|"));
       this.operand = action.getMasterName() + "-" + temp;
@@ -56,12 +61,28 @@ public class ActionInfoDTO {
     this.actionTaskEnum = actionTaskEnum;
   }
 
-  public PiperData getSrcPiperData() {
-    return srcPiperData;
+  public String getLocation() {
+    return location;
   }
 
-  public void setSrcPiperData(PiperData srcPiperData) {
-    this.srcPiperData = srcPiperData;
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public String getGroup() {
+    return group;
+  }
+
+  public void setGroup(String group) {
+    this.group = group;
+  }
+
+  public int getPiperId() {
+    return piperId;
+  }
+
+  public void setPiperId(int piperId) {
+    this.piperId = piperId;
   }
 
   public String getOperand() {

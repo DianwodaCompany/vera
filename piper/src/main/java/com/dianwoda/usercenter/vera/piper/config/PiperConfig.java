@@ -23,6 +23,14 @@ public class PiperConfig {
     return IPUtil.getServerIp() + ":" + getParam(PiperConfigKey.PIPER_BIND_PORT);
   }
 
+  public int masterSyncPort() {
+    return getParam(PiperConfigKey.PIPER_BIND_PORT, Integer.class) + 2;
+  }
+
+  public String getHost() {
+    return IPUtil.getServerIp();
+  }
+
   public <T> T getParam(String key, Class<T> valueClass) {
     return environment.getProperty(key, valueClass);
   }
