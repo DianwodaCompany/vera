@@ -28,7 +28,7 @@ vera
 
 <a name="vera-解决什么问题"></a>
 # Vera 解决什么问题
-Redis 在点我达内部得到了广泛的使用，根据运维数据统计，整个点我达全部Redis Master的读写请求在每秒 60W+，其中不包括Slave的读请求，很多业务甚至会将Redis当成内存数据库使用。这样，就对Redis多数据中心提出了很大的需求，一是为了提升可用性，解决数据中心 DR(Disaster Recovery) 问题，二是公司业务实现异地多活，不同机房有自己的数据中心，每个数据中心仅读写当前数据中心的数据，但各数据中心的Redis数据需要同步，允许存在一定的延时。在这样的需求下，Vera应运而生, 一定程度上，Vera实现了Redis Cluster的多主数据同步。  
+Redis 在点我达内部得到了广泛的使用，根据运维数据统计，整个点我达全部Redis Master的读写请求在每秒60W+，其中不包括Slave的读请求，很多业务甚至会将Redis当成内存数据库使用。这样，就对Redis多数据中心提出了很大的需求，一是为了提升可用性，解决数据中心 DR(Disaster Recovery) 问题，二是公司业务实现异地多活，不同机房有自己的数据中心，每个数据中心仅读写当前数据中心的数据，但各数据中心的Redis数据需要同步，允许存在一定的延时。在这样的需求下，Vera应运而生, 一定程度上，Vera实现了Redis Cluster的多主数据同步。  
 
 为了方便描述，后面用 DC 代表数据中心 (Data Center)。
 
@@ -41,7 +41,9 @@ Redis 在点我达内部得到了广泛的使用，根据运维数据统计，�
 
 -  Console：用来提供用户界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
 -  NamerServer：各Piper信息与各任务执行情况的集中维护，主要是通过Piper的心跳上报；
--  Piper:Vera中最主要的结点，主要功能如下：1) Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；2) 同步其它Piper的数据并写入本地Redis Master中； 所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis Cluster;
+-  Piper:Vera中最主要的结点，主要功能如下：
+- - Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；
+- - 同步其它Piper的数据并写入本地Redis Master中；所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis Cluster;
 
 <a name="redis-多主数据同步问题"></a>
 ## Redis 多主数据同步问题
@@ -72,7 +74,7 @@ piper之间的数据同步采用增量同步方式，假设piperA开始同步pip
 <a name="Vera-系统高可用"></a>
 ### Piper 系统高可用
 如果 Piper 挂掉，多数据中心之间的数据传输可能会中断，解决这个问题，Vera设计了两种解决方式：
-1) Piper有主备两个节点，备节点实时从主节点复制数据，当主节点挂掉后，备节点会被提升为主节点，代替主节点进行服务(主备功能将在下一个版本实现)。
+1) 每个Piper可以部署一主多从，从节点实时从主节点复制数据，当主节点挂掉后，其它Piper会选择该主Piper的从节点可以数据同步，但Piper本身的主从关系没有改变，如果主Piper一直不能恢复，从节点可以配置Redis侦听；
 2) 首先预启动一个Piper作为备用，当主Piper挂掉后，操作后台，将挂掉的Piper上面的职能迁移到该备用Piper上面，从而恢复数据同步(因为是人工操作，如果配置的是仅同步新数据，则操作时间内的数据就无法同步)；
 <a name="redis-自身高可用"></a>
 ### Redis 自身高可用
@@ -112,8 +114,8 @@ Thanks for all the people who contributed to Vera !
 
 <a name="Todolist"></a>
 # To do list
-  * piper实现主备功能, 防止piper挂掉能实时切换
-  * namer-server实现双主功能, 以防止单个namer挂掉造成影响
+  * piper实现主备功能, 减少master piper挂掉对其它piper数据同步造成的影响； (已经在0.0.2版本中实现)
+  * namer-server实现双主功能, 以防止单个namer挂掉造成影响;
   
 <a name="license"></a>
 # License
