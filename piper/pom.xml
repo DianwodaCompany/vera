@@ -23,17 +23,17 @@
         <dependency>
             <groupId>com.dianwoda.usercenter.vera</groupId>
             <artifactId>common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.dianwoda.usercenter.vera</groupId>
             <artifactId>remoting</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.dianwoda.usercenter.vera</groupId>
             <artifactId>store</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.2-SNAPSHOT</version>
         </dependency>
 
         <!-- springboot 基础包 -->
