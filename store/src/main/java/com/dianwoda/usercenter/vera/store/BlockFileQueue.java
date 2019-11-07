@@ -70,7 +70,7 @@ public class BlockFileQueue  {
    * 根据offset查找block file
    * @return
    */
-  public BlockFile findBlockFileByOffset(final long offset) {
+  public BlockFile findBlockFileByOffset(final long offset, final boolean returnFirstNotFound) {
     BlockFile firstBlockFile = getFirstBlockFile();
     if (firstBlockFile == null) {
       return null;
@@ -83,14 +83,15 @@ public class BlockFileQueue  {
     try {
       int index = (int)(offset/this.blockFileSize - firstOffset/this.blockFileSize);
       if (index >= this.blockFiles.size()) {
-        log.error(String.format("offset too big, can't match. offset:%d, blockfile size:%d, index:%d", offset,
+        log.warn(String.format("offset too big, can't match. offset:%d, blockfile size:%d, index:%d", offset,
                 this.blockFiles.size(), index));
-        return null;
       }
       return this.blockFiles.get(index);
     } catch (Exception e) {
-      log.error("find block file by offset: " + offset + " failture", e);
-      log.info("blockFiles:" + blockFiles);
+      if (returnFirstNotFound) {
+        return firstBlockFile;
+      }
+      log.error("find block file by offset: " + offset + " failture, blockFiles:" + blockFiles, e);
     }
     return null;
   }
@@ -166,7 +167,7 @@ public class BlockFileQueue  {
 
   public boolean flush(final int flushLeastPages) {
     boolean result = true;
-    BlockFile blockFile = this.findBlockFileByOffset(this.flushedWhere);
+    BlockFile blockFile = this.findBlockFileByOffset(this.flushedWhere, true);
     if (blockFile != null) {
       long tmpTimeStamp = blockFile.getStoreTimestamp();
       int offset = blockFile.flush(flushLeastPages);

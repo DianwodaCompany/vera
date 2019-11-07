@@ -125,6 +125,25 @@ public class BlockFile extends ReferenceResource {
     return false;
   }
 
+  public boolean appendCommand(final long phyOffset, final byte[] data) {
+    if (phyOffset < 0) {
+      return false;
+    }
+
+    int pos = (int)(phyOffset % this.fileSize);
+    if ((pos + data.length) <= this.fileSize) {
+      try {
+        this.fileChannel.position(pos);
+        this.fileChannel.write(ByteBuffer.wrap(data));
+      } catch (Throwable e) {
+        log.error("appendCommand error", e);
+      }
+      this.wrotePosition.set(pos + data.length);
+      return true;
+    }
+    return false;
+  }
+
   public SelectMappedBufferResult queryCommand(long offset, int num) {
     int relativeOffset = (int) (offset % this.fileSize);
     ByteBuffer operBuffer = this.mappedByteBuffer.slice();

@@ -274,7 +274,7 @@ public class DefaultCommandStore implements CommandStore {
 
   @Override
   public boolean appendCommandToBlockFile(long phyOffset, byte[] data) {
-    BlockFile blockFile = this.blockFileQueue.findBlockFileByOffset(phyOffset);
+    BlockFile blockFile = this.blockFileQueue.findBlockFileByOffset(phyOffset, false);
     if (blockFile == null || blockFile.isFull()) {
       blockFile = this.blockFileQueue.getLastBlockFile(phyOffset, true);
     }
@@ -284,7 +284,7 @@ public class DefaultCommandStore implements CommandStore {
     }
     putCommandLock.lock();
     try {
-      return blockFile.appendCommand(data);
+      return blockFile.appendCommand(phyOffset, data);
     } finally {
       putCommandLock.unlock();
     }
@@ -354,7 +354,7 @@ public class DefaultCommandStore implements CommandStore {
       //
       long newOffset = offset;
       for(int i=0; i<msgNums; i++) {
-        BlockFile blockFile = blockFileQueue.findBlockFileByOffset(newOffset);
+        BlockFile blockFile = blockFileQueue.findBlockFileByOffset(newOffset, false);
         SelectMappedBufferResult selectMappedBufferResult = blockFile == null ? null : blockFile.queryCommand(newOffset);
         if(selectMappedBufferResult != null) {
           try {
@@ -414,7 +414,7 @@ public class DefaultCommandStore implements CommandStore {
       }
     } else {
       //
-      BlockFile blockFile = blockFileQueue.findBlockFileByOffset(nextBeginOffset);
+      BlockFile blockFile = blockFileQueue.findBlockFileByOffset(nextBeginOffset, false);
       SelectMappedBufferResult selectMappedBufferResult = blockFile.queryCommand(nextBeginOffset, msgNums);
       if(selectMappedBufferResult != null) {
         try {
@@ -447,7 +447,7 @@ public class DefaultCommandStore implements CommandStore {
 
   @Override
   public SelectMappedBufferResult getCommand(long offset) {
-    BlockFile blockFile = blockFileQueue.findBlockFileByOffset(offset);
+    BlockFile blockFile = blockFileQueue.findBlockFileByOffset(offset, false);
     if (blockFile != null) {
       return blockFile.queryCommand(offset);
     } else {
@@ -517,7 +517,7 @@ public class DefaultCommandStore implements CommandStore {
 
     this.scheduledExecutorService.scheduleAtFixedRate(() -> {
       DefaultCommandStore.this.cleanFiles();
-    }, 1000 * 60, DefaultCommandStore.cleanResourceInterval, TimeUnit.MILLISECONDS);
+    }, 1000 * 120, DefaultCommandStore.cleanResourceInterval, TimeUnit.MILLISECONDS);
   }
 
   @Override

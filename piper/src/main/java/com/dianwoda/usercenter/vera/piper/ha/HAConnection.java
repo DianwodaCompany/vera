@@ -83,6 +83,9 @@ public class HAConnection {
             } else {
               nextWriteOffset = slaveRequestOffset;
             }
+
+            log.info("HAConnection start transfer data, nextWriteOffset:" + nextWriteOffset + ", slaveRequestOffset:" + slaveRequestOffset +
+                      ", MaxWriteOffset:" + HAConnection.this.haServer.getCommandStore().getMaxWriteOffset());
           }
           if (!lastWriteOver) {
             this.lastWriteOver = this.transferData();
@@ -101,8 +104,9 @@ public class HAConnection {
 
             nextWriteOffset += selectMappedBufferResult.getSize();
             this.transferResult = selectMappedBufferResult;
-
+            log.info("HAConnection start transfer data, nextWriteOffset:" + nextWriteOffset + ", size:" + selectMappedBufferResult.getSize());
             this.lastWriteOver = this.transferData();
+
           } else {
             Thread.sleep(500);
           }
@@ -293,9 +297,11 @@ public class HAConnection {
               int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % 8);
               long readOffset = this.byteBufferRead.getLong(pos-8);
               this.readPos = pos;
-
+              if (HAConnection.this.slaveRequestOffset != readOffset) {
+                log.info("HAConnection.this.slaveRequestOffset:" + HAConnection.this.slaveRequestOffset + ", readOffset:" + readOffset);
+              }
               HAConnection.this.slaveRequestOffset = readOffset;
-              if (slaveOffsetPrintCount++ == 2000) {
+              if (++slaveOffsetPrintCount == 2000) {
                 log.info("HAConnection.this.slaveRequestOffset:" + HAConnection.this.slaveRequestOffset);
                 slaveOffsetPrintCount = 0;
               }

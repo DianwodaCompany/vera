@@ -153,9 +153,8 @@ public class HAClient implements Runnable {
 
         long phyOffset = dataReadBuffer.getLong(dispatchPosition);
         int dataSize = dataReadBuffer.getInt(dispatchPosition + 8);
-
         long slavePhyOffset = this.piperController.getCommandStore().getMaxWriteOffset();
-        log.info("phyOffset:" + phyOffset + " dataSize:" + dataSize + " slavePhyOffset:" + slavePhyOffset);
+        log.info("phyOffset:" + phyOffset + " dataSize:" + dataSize + " slavePhyOffset:" + slavePhyOffset + " diff:" + diff);
 
         if (slavePhyOffset != 0) {
           if (slavePhyOffset != phyOffset) {
@@ -170,8 +169,6 @@ public class HAClient implements Runnable {
           this.dataReadBuffer.position(dispatchPosition + headerSize);
           this.dataReadBuffer.get(data);
           this.piperController.getCommandStore().appendCommandToBlockFile(phyOffset, data);
-
-
           this.dataReadBuffer.position(readPosition);
           this.dispatchPosition += dataSize + headerSize;
 
