@@ -26,6 +26,7 @@ public class HAConnection {
   private final ReadSocketHandler readSocketHandler;
   private final WriteSocketHandler writeSocketHandler;
   public final static int HAConnectionKeepingInterval = 1000 * 10;
+  public final static int TransferDataSizeLimit = 1024 * 64;
   private volatile long slaveRequestOffset = -1;
   private long nextWriteOffset = -1;
   public HAConnection(final HAServer haServer, final SocketChannel sc) throws IOException {
@@ -96,13 +97,18 @@ public class HAConnection {
 
           SelectMappedBufferResult selectMappedBufferResult = HAConnection.this.haServer.getCommandStore().getCommand(nextWriteOffset);
           if (selectMappedBufferResult != null) {
+            int size = selectMappedBufferResult.getSize();
+            if (size > TransferDataSizeLimit) {
+              size = TransferDataSizeLimit;
+              selectMappedBufferResult.getByteBuffer().limit(size);
+            }
             headerBuffer.position(0);
             headerBuffer.putLong(nextWriteOffset);
-            headerBuffer.putInt(selectMappedBufferResult.getSize());
+            headerBuffer.putInt(size);
             headerBuffer.limit(headerSize);
             headerBuffer.flip();
 
-            nextWriteOffset += selectMappedBufferResult.getSize();
+            nextWriteOffset += size;
             this.transferResult = selectMappedBufferResult;
             log.info("HAConnection start transfer data, nextWriteOffset:" + nextWriteOffset + ", size:" + selectMappedBufferResult.getSize());
             this.lastWriteOver = this.transferData();
@@ -301,7 +307,7 @@ public class HAConnection {
                 log.info("HAConnection.this.slaveRequestOffset:" + HAConnection.this.slaveRequestOffset + ", readOffset:" + readOffset);
               }
               HAConnection.this.slaveRequestOffset = readOffset;
-              if (++slaveOffsetPrintCount == 2000) {
+              if (++slaveOffsetPrintCount == 10000) {
                 log.info("HAConnection.this.slaveRequestOffset:" + HAConnection.this.slaveRequestOffset);
                 slaveOffsetPrintCount = 0;
               }

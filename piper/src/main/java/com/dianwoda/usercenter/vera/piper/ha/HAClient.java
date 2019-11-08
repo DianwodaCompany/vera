@@ -73,6 +73,7 @@ public class HAClient implements Runnable {
         if (this.satisfyReport()) {
           if (!this.reportOffset()) {
             this.closeConnectMaster();
+            log.info("HAClient close ConnectMaster");
             continue;
           }
         }
@@ -81,6 +82,7 @@ public class HAClient implements Runnable {
         boolean ok = processReadEvent();
         if (!ok) {
           this.closeConnectMaster();
+          log.info("HAClient close ConnectMaster");
         }
 
         long interval = SystemClock.now() - this.lastWriteTimeStamp;
