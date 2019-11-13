@@ -77,6 +77,8 @@ piper之间的数据同步采用增量同步方式，假设piperA开始同步pip
 1) 每个Piper可以部署一主多从，从节点实时从主节点复制数据，当主节点挂掉后，其它Piper会选择该主Piper的从节点可以数据同步，但Piper本身的主从关系没有改变，如果主Piper一直不能恢复，从节点可以配置Redis侦听；
 2) 首先预启动一个Piper作为备用，当主Piper挂掉后，操作后台，将挂掉的Piper上面的职能迁移到该备用Piper上面，从而恢复数据同步(因为是人工操作，如果配置的是仅同步新数据，则操作时间内的数据就无法同步)；
 <a name="redis-自身高可用"></a>
+### Namer Server 系统高可用
+Namer Server可以部署多个，每个namer server是无状态的，相互之间没有数据传输，如果部署多个，可以设置Piper同时向多个Namer Server上报信息，当需要从Namer Server获取数据时，会先请求默认配置的NamerServer，如果该NamerServer不可用，会随机从其它可用的NamerServer中挑选出一个，重新请求获取数据；
 ### Redis 自身高可用
 Redis Master也可能会挂，Redis本身提供哨兵 (Sentinel) 机制保证集群的高可用；
 ### Vera 可运维
@@ -115,7 +117,7 @@ Thanks for all the people who contributed to Vera !
 <a name="Todolist"></a>
 # To do list
   * piper实现主备功能, 减少master piper挂掉对其它piper数据同步造成的影响； (已经在0.0.2版本中实现)
-  * namer-server实现双主功能, 以防止单个namer挂掉造成影响;
+  * namer-server实现双主功能, 以防止单个namer挂掉造成影响  (已经在0.0.2版本中实现);
   
 <a name="license"></a>
 # License
