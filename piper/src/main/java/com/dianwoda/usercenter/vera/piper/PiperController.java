@@ -83,6 +83,10 @@ public class PiperController {
       this.pullMessageExecutor = new ThreadPoolExecutor(
               16, 16, 1000 * 60, TimeUnit.MILLISECONDS,
               new LinkedBlockingQueue<Runnable>(100000), new ThreadFactoryImpl("PullMessageThread_"));
+
+      this.scheduledExecutorService.scheduleAtFixedRate(() -> {
+        PiperController.this.piperClientInstance.getPiperClientAPIImpl().fetchNamerServerAddr();
+      }, 1000*10, 1000 * 60 * 2 , TimeUnit.MILLISECONDS);
     }
 
     this.registerProcessor();

@@ -44,6 +44,10 @@ public class PiperConfig {
     return this.getParam(PiperConfigKey.PIPER_NAMER_LOCATION);
   }
 
+  public String nameHttp() {
+    return this.getParam(PiperConfigKey.PIPER_NAMER_HTTP);
+  }
+
   public String storePath() {
     return this.getParam(PiperConfigKey.DATA_STORE_PATH);
   }

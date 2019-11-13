@@ -18,27 +18,29 @@ package com.dianwoda.usercenter.vera.common;
 
 public class VeraVersion {
 
-    public static final int CURRENT_VERSION = Version.V1_0_0_SNAPSHOT.ordinal();
+  public static final int CURRENT_VERSION = Version.V0_0_2_SNAPSHOT.ordinal();
 
-    public static String getVersionDesc(int value) {
-        int length = Version.values().length;
-        if (value >= length) {
-            return Version.values()[length - 1].name();
-        }
-
-        return Version.values()[value].name();
+  public static String getVersionDesc(int value) {
+    int length = Version.values().length;
+    if (value >= length) {
+      return Version.values()[length - 1].name();
     }
 
-    public static Version value2Version(int value) {
-        int length = Version.values().length;
-        if (value >= length) {
-            return Version.values()[length - 1];
-        }
+    return Version.values()[value].name();
+  }
 
-        return Version.values()[value];
+  public static Version value2Version(int value) {
+    int length = Version.values().length;
+    if (value >= length) {
+      return Version.values()[length - 1];
     }
 
-    public enum Version {
-        V1_0_0_SNAPSHOT,
-    }
+    return Version.values()[value];
+  }
+
+  public enum Version {
+    V0_0_1_SNAPSHOT,
+    V0_0_2_SNAPSHOT,
+
+  }
 }

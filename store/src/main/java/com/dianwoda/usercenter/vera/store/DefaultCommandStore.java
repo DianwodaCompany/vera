@@ -569,26 +569,37 @@ public class DefaultCommandStore implements CommandStore {
     @Override
     public void run() {
       long startFlushTime = SystemClock.now();
-      int interval = 1000 * 5;
       while (!this.isStop()) {
-        boolean canFlush = false;
-        boolean forceFlush = false;
-        if (SystemClock.now() - startFlushTime >= FLUSH_SPAN) {
-          canFlush = true;
-        }
-        if (SystemClock.now() - startFlushTime >= FORCE_FLUSH_SPAN) {
-          forceFlush = true;
-        }
-        if (forceFlush || (canFlush && !waitForRunning(interval))) {
-          blockFileQueue.flush(0);
-          startFlushTime = SystemClock.now();
-
-          long storeTimestamp = DefaultCommandStore.this.blockFileQueue.getStoreTimestamp();
-          if (storeTimestamp > 0) {
-            DefaultCommandStore.this.storeCheckpoint.setPhysicMsgTimestamp(storeTimestamp);
+        try {
+          boolean canFlush = false;
+          boolean forceFlush = false;
+          if (SystemClock.now() - startFlushTime >= FLUSH_SPAN) {
+            canFlush = true;
           }
+          if (SystemClock.now() - startFlushTime >= FORCE_FLUSH_SPAN) {
+            forceFlush = true;
+          }
+          if (forceFlush || (canFlush && waitForRunning(FLUSH_SPAN))) {
+            blockFileQueue.flush(0);
+            startFlushTime = SystemClock.now();
+
+            long storeTimestamp = DefaultCommandStore.this.blockFileQueue.getStoreTimestamp();
+            if (storeTimestamp > 0) {
+              DefaultCommandStore.this.storeCheckpoint.setPhysicMsgTimestamp(storeTimestamp);
+            }
+          }
+        } catch (Exception e) {
+          DefaultCommandStore.log.info("FlushRealTimeService service run error!", e);
         }
       }
+
+      // Normal shutdown
+      boolean result = false;
+      for (int i=0; i<10 && !result; i++) {
+        result = blockFileQueue.flush(0);
+        DefaultCommandStore.log.info("FlushRealTimeService service shutdown, retry " + (i + 1) + " times " + (result ? "OK" : "Not OK"));
+      }
+      DefaultCommandStore.log.info("FlushRealTimeService service end!");
     }
   }
 

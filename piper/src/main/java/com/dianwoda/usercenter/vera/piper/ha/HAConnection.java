@@ -314,7 +314,7 @@ public class HAConnection {
               break;
             }
           } else if (num == 0) {
-            if (++readZeroCount >= 3) {
+            if (++readZeroCount >= 5) {
               break;
             }
           } else {

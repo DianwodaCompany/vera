@@ -13,5 +13,7 @@ public class PiperConfigKey {
 
   public static String PIPER_NAMER_LOCATION = "piper.namer.location";
 
+  public static String PIPER_NAMER_HTTP = "piper.namer.http";
+
   public static String DATA_STORE_PATH = "data.store.path";
 }

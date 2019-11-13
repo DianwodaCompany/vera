@@ -112,8 +112,7 @@ public class PiperClientInstance {
   public void updatePiperInfoFromNamer() {
     try {
       namerOperLock.tryLock(1000 * 3, TimeUnit.MILLISECONDS);
-      PiperAllData piperAllData = this.piperClientAPIImpl.updatePiperInfoFromNamer(this.piperConfig.nameLocation(),
-              this.piperConfig.location(), GET_PIPER_INFO_MAX_TIMEOUT_MILLIS);
+      PiperAllData piperAllData = this.piperClientAPIImpl.updatePiperInfoFromNamer(this.piperConfig.location(), GET_PIPER_INFO_MAX_TIMEOUT_MILLIS);
       if (piperAllData != null) {
         List<PiperData> needAdd = new ArrayList<PiperData>();
         for (PiperData piperData : piperAllData.getPiperDataList()) {

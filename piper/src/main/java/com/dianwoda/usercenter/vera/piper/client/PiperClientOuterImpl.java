@@ -9,17 +9,20 @@ import com.dianwoda.usercenter.vera.common.protocol.route.PiperAllData;
 import com.dianwoda.usercenter.vera.piper.DefaultRPCHookImpl;
 import com.dianwoda.usercenter.vera.piper.client.protocal.PullResult;
 import com.dianwoda.usercenter.vera.piper.client.protocal.PullResultExt;
+import com.dianwoda.usercenter.vera.piper.config.PiperConfig;
 import com.dianwoda.usercenter.vera.piper.enums.CommunicationMode;
 import com.dianwoda.usercenter.vera.piper.enums.PullStatus;
 import com.dianwoda.usercenter.vera.piper.enums.RequestExceptionReason;
 import com.dianwoda.usercenter.vera.piper.exception.PiperException;
 import com.dianwoda.usercenter.vera.piper.processor.NamerManagerProcessor;
+import com.dianwoda.usercenter.vera.piper.util.MixUtil;
 import com.dianwoda.usercenter.vera.remoting.RPCHook;
 import com.dianwoda.usercenter.vera.remoting.RemotingClient;
 import com.dianwoda.usercenter.vera.remoting.exception.*;
 import com.dianwoda.usercenter.vera.remoting.netty.NettyClientConfig;
 import com.dianwoda.usercenter.vera.remoting.netty.NettyRemotingClient;
 import com.dianwoda.usercenter.vera.remoting.protocol.RemotingCommand;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +41,7 @@ public class PiperClientOuterImpl {
   private final PiperClientInstance piperClientInstance;
   private final RemotingClient remotingClient;
   private final NamerManagerProcessor namerManagerProcessor;
-//  private final RPCHook rpcHook;
+  private String namerServerAddrs = null;
   private final ExecutorService namerManagerExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
     @Override
     public Thread newThread(Runnable r) {
@@ -50,8 +53,6 @@ public class PiperClientOuterImpl {
                               final NamerManagerProcessor namerManagerProcessor) {
     this.piperClientInstance = piperClientInstance;
     this.remotingClient = new NettyRemotingClient(nettyClientConfig, null);
-//    this.rpcHook = new DefaultRPCHookImpl();
-//    this.remotingClient.registerRPCHook(this.rpcHook);
     this.namerManagerProcessor = namerManagerProcessor;
     /**
      * from namer
@@ -71,6 +72,23 @@ public class PiperClientOuterImpl {
 //    this.rpcHook.stop();
     this.remotingClient.shutdown();
   }
+
+  public String fetchNamerServerAddr() {
+    PiperConfig piperConfig = this.piperClientInstance.getPiperController().getPiperConfig();
+    try {
+      String addrs = MixUtil.fetchNamerServerAddr(piperConfig.nameHttp(), 3000);
+      if (StringUtils.isNotEmpty(addrs) && !addrs.equals(this.namerServerAddrs)) {
+        log.info("namer server address change, old:" + this.namerServerAddrs + " new:" + addrs);
+        this.updateNamerLocation(addrs);
+        this.namerServerAddrs = addrs;
+        return this.namerServerAddrs;
+      }
+    } catch (Exception e) {
+      log.error("fetchNamerServerAddr error", e);
+    }
+    return this.namerServerAddrs;
+  }
+
 
   public void updateNamerLocation(final String addrs) {
     List<String> list = new ArrayList<String>();
@@ -202,12 +220,12 @@ public class PiperClientOuterImpl {
     throw new PiperException(response.getCode(), response.getRemark());
   }
 
-  public PiperAllData updatePiperInfoFromNamer(String namerLocation, String location, final long timeoutMillis)
+  public PiperAllData updatePiperInfoFromNamer(String location, final long timeoutMillis)
       throws PiperException, RemotingException, InterruptedException {
     GetPipersFromNamerRequestHeader requestHeader = new GetPipersFromNamerRequestHeader();
     requestHeader.setSrcLocation(location);
     RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_PIPER_INFO_FROM_NAMER, requestHeader);
-    RemotingCommand response = this.remotingClient.invokeSync(namerLocation, request, timeoutMillis);
+    RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
     assert response != null;
     switch (response.getCode()) {
       case ResponseCode.SUCCESS:

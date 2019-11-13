@@ -238,11 +238,11 @@ public class BlockFile extends ReferenceResource {
     long flushPoint = this.flushedPosition.get();
 
     if (isFull()) {
-      return false;
+      return true;
     }
 
     if (flushLeastPages > 0) {
-      return flushLeastPages >= (wrotePoint - flushPoint) / OS_PAGE_SIZE;
+      return flushLeastPages < (wrotePoint - flushPoint) / OS_PAGE_SIZE;
     }
 
     return wrotePoint > flushPoint;
