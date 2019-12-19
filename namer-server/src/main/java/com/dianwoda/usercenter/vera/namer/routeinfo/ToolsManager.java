@@ -78,6 +78,7 @@ public class ToolsManager {
       try {
         response = this.piperClient.callPiper(channel, request);
       } catch (Exception e) {
+        response = RemotingCommand.createResponseCommand(SyncPiperResponseHeader.class);
         response.setCode(ResponseCode.SYSTEM_ERROR);
         response.setRemark("syncPiper error, detail:" + e.getMessage());
       }

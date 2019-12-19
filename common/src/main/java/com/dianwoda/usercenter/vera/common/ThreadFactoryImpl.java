@@ -17,20 +17,35 @@
 
 package com.dianwoda.usercenter.vera.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ThreadFactoryImpl implements ThreadFactory {
-    private final AtomicLong threadIndex = new AtomicLong(0);
-    private final String threadNamePrefix;
+  protected static final Logger log = LoggerFactory.getLogger(ThreadFactoryImpl.class);
 
-    public ThreadFactoryImpl(final String threadNamePrefix) {
-        this.threadNamePrefix = threadNamePrefix;
+  private final AtomicLong threadIndex = new AtomicLong(0);
+  private final String threadNamePrefix;
+  private Thread.UncaughtExceptionHandler handler = null;
+
+  public ThreadFactoryImpl(final String threadNamePrefix) {
+    this.threadNamePrefix = threadNamePrefix;
+  }
+
+  public ThreadFactoryImpl(final String threadNamePrefix, Thread.UncaughtExceptionHandler handler) {
+    this.threadNamePrefix = threadNamePrefix;
+    this.handler = handler;
+  }
+
+  @Override
+  public Thread newThread(Runnable r) {
+    Thread thread = new Thread(r, threadNamePrefix + this.threadIndex.incrementAndGet());
+    if (this.handler != null) {
+      thread.setUncaughtExceptionHandler(this.handler);
     }
+    return thread;
+  }
 
-    @Override
-    public Thread newThread(Runnable r) {
-        return new Thread(r, threadNamePrefix + this.threadIndex.incrementAndGet());
-
-    }
 }

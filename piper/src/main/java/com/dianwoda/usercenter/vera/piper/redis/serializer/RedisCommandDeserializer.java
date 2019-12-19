@@ -34,14 +34,14 @@ public class RedisCommandDeserializer implements ObjectDeserializer<RedisCommand
       swordCommand.setKey(keyBytes);
     }
 
+    swordCommand.setIndex(byteBuffer.getLong());
+
     int fieldLen = byteBuffer.getInt();
     if (fieldLen > 0) {
       byte[] fieldBytes = new byte[fieldLen];
       byteBuffer.get(fieldBytes);
       swordCommand.setField(fieldBytes);
     }
-
-    swordCommand.setIndex(byteBuffer.getLong());
 
     int fieldsLen = byteBuffer.getInt();
     if (fieldsLen > 0) {

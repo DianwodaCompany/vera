@@ -25,7 +25,7 @@ public class ProcessQueue {
   private volatile long lastPullTimestamp = SystemClock.now();
   private volatile boolean isConsuming = false;
   private AtomicInteger msgCount = new AtomicInteger(0);
-  private ReadWriteLock lockTreeMap = new ReentrantReadWriteLock();
+  private ReadWriteLock treeMapLock = new ReentrantReadWriteLock();
   private ReentrantLock consumeLock = new ReentrantLock();
   private final TreeMap<Long, CommandExt> commandTreeMap = new TreeMap<Long, CommandExt>();
   private final TreeMap<Long, CommandExt> commandTempTreeMap = new TreeMap<>();
@@ -42,7 +42,7 @@ public class ProcessQueue {
     boolean dispatchConsume = false;
     int oldMsgCount = msgCount.get();
     try {
-      this.lockTreeMap.writeLock().lockInterruptibly();
+      this.treeMapLock.writeLock().lockInterruptibly();
       int validMsgCount = 0;
       for (CommandExt commandExt : commands) {
         CommandExt old = commandTreeMap.put(commandExt.getStoreOffset(), commandExt);
@@ -60,7 +60,7 @@ public class ProcessQueue {
       log.error("pullCommand exception", e);
       return new ProcessQueueStatus(-1, false);
     } finally {
-      this.lockTreeMap.writeLock().unlock();
+      this.treeMapLock.writeLock().unlock();
     }
     return new ProcessQueueStatus(oldMsgCount, dispatchConsume);
   }
@@ -96,7 +96,7 @@ public class ProcessQueue {
 
   public long getMaxSpan() {
     try {
-      this.lockTreeMap.readLock().lockInterruptibly();
+      this.treeMapLock.readLock().lockInterruptibly();
       if (!this.commandTreeMap.isEmpty()) {
         return this.commandTreeMap.lastKey() - this.commandTreeMap.firstKey();
       }
@@ -104,14 +104,14 @@ public class ProcessQueue {
     } catch (InterruptedException e) {
       log.error("getMaxSpan exception", e);
     } finally {
-      this.lockTreeMap.readLock().unlock();
+      this.treeMapLock.readLock().unlock();
     }
     return 0;
   }
 
   public List<CommandExt> takeCommands(int num) throws InterruptedException {
     List<CommandExt> commands = new ArrayList<>();
-    if (this.lockTreeMap.writeLock().tryLock(2000, TimeUnit.MILLISECONDS)) {
+    if (this.treeMapLock.writeLock().tryLock(10000, TimeUnit.MILLISECONDS)) {
       try {
         for (int i = 0; i < num; i++) {
           Map.Entry<Long, CommandExt> entry = this.commandTreeMap.pollFirstEntry();
@@ -127,15 +127,17 @@ public class ProcessQueue {
         }
 
       } finally {
-        this.lockTreeMap.writeLock().unlock();
+        this.treeMapLock.writeLock().unlock();
       }
+    } else {
+      log.error("try get lock of takeCommands error!");
     }
     return commands;
   }
 
   public long commit() throws InterruptedException {
 
-    if (this.lockTreeMap.writeLock().tryLock(2000, TimeUnit.MILLISECONDS)) {
+    if (this.treeMapLock.writeLock().tryLock(20000, TimeUnit.MILLISECONDS)) {
       try {
         Map.Entry<Long, CommandExt> entry = this.commandTempTreeMap.lastEntry();
         this.msgCount.addAndGet(this.commandTempTreeMap.size() * -1);
@@ -148,14 +150,42 @@ public class ProcessQueue {
         }
 
       } finally {
-        this.lockTreeMap.writeLock().unlock();
+        this.treeMapLock.writeLock().unlock();
       }
+    } else {
+      log.error("commit elasp overtime, error!");
+    }
+    return -1;
+  }
+
+  public int getTempTreeSize() {
+    try {
+      if (this.treeMapLock.readLock().tryLock(1000, TimeUnit.MILLISECONDS)) {
+        return this.commandTempTreeMap.size();
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } finally {
+      this.treeMapLock.readLock().unlock();
+    }
+    return -1;
+  }
+
+  public int getTreeSize() {
+    try {
+      if (this.treeMapLock.readLock().tryLock(1000, TimeUnit.MILLISECONDS)) {
+        return this.commandTreeMap.size();
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } finally {
+      this.treeMapLock.readLock().unlock();
     }
     return -1;
   }
 
   public void consumeAgain(List<CommandExt> commands) throws InterruptedException {
-    if (this.lockTreeMap.writeLock().tryLock(2000, TimeUnit.MILLISECONDS)){
+    if (this.treeMapLock.writeLock().tryLock(2000, TimeUnit.MILLISECONDS)){
       try {
         if (!commands.isEmpty()) {
           for (CommandExt command : commands) {
@@ -164,7 +194,7 @@ public class ProcessQueue {
           }
         }
       } finally {
-        this.lockTreeMap.writeLock().unlock();
+        this.treeMapLock.writeLock().unlock();
       }
     }
   }
@@ -179,7 +209,7 @@ public class ProcessQueue {
 
   public void clear() {
     try {
-      this.lockTreeMap.writeLock().lockInterruptibly();
+      this.treeMapLock.writeLock().lockInterruptibly();
       this.commandTempTreeMap.clear();
       this.commandTreeMap.clear();
       this.msgCount.set(0);
@@ -187,7 +217,7 @@ public class ProcessQueue {
     } catch (InterruptedException e) {
       log.error("clear error", e);
     } finally {
-      this.lockTreeMap.writeLock().unlock();
+      this.treeMapLock.writeLock().unlock();
     }
   }
 

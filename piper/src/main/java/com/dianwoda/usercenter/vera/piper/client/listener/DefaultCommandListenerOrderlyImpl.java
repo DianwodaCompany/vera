@@ -4,10 +4,9 @@ import com.dianwoda.usercenter.vera.common.SystemClock;
 import com.dianwoda.usercenter.vera.common.UtilAll;
 import com.dianwoda.usercenter.vera.common.message.CommandExt;
 import com.dianwoda.usercenter.vera.common.redis.command.RedisCommand;
-import com.dianwoda.usercenter.vera.piper.redis.serializer.RedisCommandDeserializer;
 import com.dianwoda.usercenter.vera.piper.client.PiperClientInstance;
 import com.dianwoda.usercenter.vera.piper.enums.ConsumeOrderlyStatus;
-import com.dianwoda.usercenter.vera.piper.service.ConsumeCommandOrderlyService;
+import com.dianwoda.usercenter.vera.piper.redis.serializer.RedisCommandDeserializer;
 import com.dianwoda.usercenter.vera.store.io.ObjectDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +31,10 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
     if (commands == null || commands.isEmpty()) {
       return ConsumeOrderlyStatus.SUSPEND;
     }
-    
+    int i = 0, j = 0, k = 0, m = 0, n = 0, l = 0;
     try {
       for (CommandExt command : commands) {
+        i++;
         long storeTimeStamp = command.getStoreTimestamp();
         log.info("command store data time:" + UtilAll.timeMillisToHumanString2(storeTimeStamp));
 
@@ -46,18 +46,25 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
           log.info("filter command:" + command + " because of storetime is too old!");
           continue;
         }
+        k++;
         if (command.getData() != null) {
+          m++;
           RedisCommand redisCommand = deserializer.deserialize(command.getData());
+          l++;
           if (this.piperClientInstance.getPiperClientInterImpl().getRedisFacadeProcessor().write(redisCommand)) {
             log.info("Write into redis success, length {}", command.getDataLength());
           }
+          n++;
         } else {
-          log.error("command with no data!");
+          log.info("command with no data!");
         }
+        j++;
       }
-    } catch (Exception e) {
+    } catch (Throwable e) {
       log.error("command consume error", e);
       return ConsumeOrderlyStatus.SUSPEND;
+    } finally {
+      log.info("commands len:" + commands.size() + " process successly, i=" + i + ", j=" + j + ", k=" + k + ", m=" + m + ", n=" + n + ", l=" + l);
     }
     return ConsumeOrderlyStatus.SUCCESS;
   }

@@ -82,30 +82,39 @@ public class Redic extends Jedis {
 
   public void write(RedisCommand command) throws Exception {
     CommandType type = CommandType.toEnum(command.getType());
-    switch (type) {
-      case SET:
-        this.saveValueByKey(command.getKey(), command.getValue(), Long.valueOf(command.getExpiredValue()).intValue());
-        break;
-      case INCR:
-        this.incr(command.getKey());
-        break;
-      case DECR:
-        this.decr(command.getKey());
-        break;
-      case SADD:
-        this.sadd(command.getKey(), command.getMembers());
-        break;
-      case HSET:
-        this.hset(command.getKey(), command.getField(), command.getValue());
-        break;
-      case HMSET:
-        this.hmset(command.getKey(), command.getFields());
-        break;
-      case LSET:
-        this.lset(new String(command.getKey()), command.getIndex(), new String(command.getValue()));
-        break;
-      default:
-        break;
+    try {
+      switch (type) {
+        case SET:
+          this.saveValueByKey(command.getKey(), command.getValue(), Long.valueOf(command.getExpiredValue()).intValue());
+          break;
+        case SET_EX:
+          this.setex(command.getKey(), Long.valueOf(command.getExpiredValue()).intValue(), command.getValue());
+        case SET_NX:
+          this.setnx(command.getKey(), command.getValue());
+        case INCR:
+          this.incr(command.getKey());
+          break;
+        case DECR:
+          this.decr(command.getKey());
+          break;
+        case SADD:
+          this.sadd(command.getKey(), command.getMembers());
+          break;
+        case HSET:
+          this.hset(command.getKey(), command.getField(), command.getValue());
+          break;
+        case HMSET:
+          this.hmset(command.getKey(), command.getFields());
+          break;
+        case LSET:
+          this.lset(new String(command.getKey()), command.getIndex(), new String(command.getValue()));
+          break;
+        default:
+          break;
+      }
+    } catch (Throwable e) {
+      log.error("write error, key:" + command.getKey());
+      throw e;
     }
   }
 
@@ -138,72 +147,144 @@ public class Redic extends Jedis {
     }
   }
 
-
   @Override
-  public String set(String key, String value) {
-    Jedis jedis = getWrite(key);
-    String ret = jedis.set(key, value);
-    jedis.close();
+  public String set(String key, String value, String nxxx, String expx,
+                    long time) {
+    Jedis jedis = null;
+    String ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.set(key, value, nxxx, expx, time);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
   @Override
-  public String set(String key, String value, String nxxx, String expx,
-                    long time) {
-    Jedis jedis = getWrite(key);
-    String ret = jedis.set(key, value, nxxx, expx, time);
-    jedis.close();
+  public Long setnx(byte[] key, byte[] value) {
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.setnx(key, value);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
+    return ret;
+  }
 
+  @Override
+  public String setex(final byte[] key, final int seconds, final byte[] value) {
+    Jedis jedis = null;
+    String ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.setex(key, seconds, value);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
   @Override
   public String get(String key) {
+    Jedis jedis = null;
     String ret = null;
     try {
-      Jedis jedis = getRead(key);
+      jedis = getRead(key);
       ret = jedis.get(key);
-      jedis.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
 
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
 
-
   @Override
   public Long expire(String key, int seconds) {
-    Jedis jedis = getWrite(key);
-    Long ret = jedis.expire(key, seconds);
-    jedis.close();
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.expire(key, seconds);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
   @Override
   public Long expireAt(String key, long unixTime) {
-    Jedis jedis = getWrite(key);
-    Long ret = jedis.expireAt(key, unixTime);
-    jedis.close();
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.expireAt(key, unixTime);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
 
   @Override
   public Long decr(byte[] key) {
-    Jedis jedis = getWrite(key);
-    Long ret = jedis.decr(key);
-    jedis.close();
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.decr(key);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
 
   @Override
   public Long incr(byte[] key) {
-    Jedis jedis = getWrite(key);
-    Long ret = jedis.incr(key);
-    jedis.close();
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.incr(key);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
@@ -215,46 +296,88 @@ public class Redic extends Jedis {
    */
   @Override
   public Long sadd(byte[] key, byte[][] members){
-    Jedis jedis = getWrite(key);
-    long l = jedis.sadd(key, members);
-    jedis.close();
-    return l;
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.sadd(key, members);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
+    return ret;
   }
 
 
   @Override
   public Long hset(byte[] key, byte[] field, byte[] value) {
-    Jedis jedis = getWrite(key);
-    Long ret = jedis.hset(key, field, value);
-    jedis.close();
-
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.hset(key, field, value);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
 
   @Override
   public String hmset(byte[] key, Map<byte[], byte[]> hash) {
-    Jedis jedis = getWrite(key);
-    String ret = jedis.hmset(key, hash);
-    jedis.close();
-
+    Jedis jedis = null;
+    String ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.hmset(key, hash);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
   @Override
   public String lset(String key, long index, String value) {
-    Jedis jedis = getWrite(key);
-    String ret = jedis.lset(key, index, value);
-    jedis.close();
-
+    Jedis jedis = null;
+    String ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.lset(key, index, value);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 
   @Override
   public Long del(byte[] key) {
-    Jedis jedis = getWrite(key);
-    Long ret = jedis.del(key);
-    jedis.close();
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.del(key);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
     return ret;
   }
 

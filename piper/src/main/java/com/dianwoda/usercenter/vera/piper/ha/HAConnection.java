@@ -117,12 +117,9 @@ public class HAConnection {
             Thread.sleep(500);
           }
 
-        } catch (IOException e) {
-          log.error("WriteSocketHandler error", e);
-        } catch (InterruptedException e) {
-          log.error("WriteSocketHandler error", e);
         } catch (Exception e) {
           log.error("WriteSocketHandler error", e);
+          break;
         }
 
       }
@@ -130,6 +127,7 @@ public class HAConnection {
         this.transferResult.release();
       }
       this.destory();
+      HAConnection.log.info("close end");
     }
 
     private boolean transferData() throws Exception {
@@ -195,8 +193,6 @@ public class HAConnection {
       } catch (IOException e) {
         HAConnection.log.error("close error", e);
       }
-
-      HAConnection.log.info("close end");
     }
     public boolean isStop() {
       return stop;
@@ -278,6 +274,7 @@ public class HAConnection {
 
         } catch (Exception e) {
           log.error("ReadStockHandler run error", e);
+          break;
         }
       }
 
@@ -323,6 +320,7 @@ public class HAConnection {
           }
         } catch (IOException e) {
           log.error("readDataProcess IOException", e);
+          return false;
         }
 
       }

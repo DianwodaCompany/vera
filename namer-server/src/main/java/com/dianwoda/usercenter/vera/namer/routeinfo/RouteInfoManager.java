@@ -197,7 +197,7 @@ public class RouteInfoManager {
 
   public class PiperLiveInfo {
     private long lastUpdateTimestamp;
-    private Channel channel;
+    private volatile Channel channel;
     private String haServerLocation;
 
     public PiperLiveInfo(long lastUpdateTimestamp, Channel channel, String haServerLocation) {

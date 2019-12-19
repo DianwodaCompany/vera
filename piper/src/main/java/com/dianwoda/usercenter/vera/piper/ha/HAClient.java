@@ -37,8 +37,8 @@ public class HAClient implements Runnable {
   private long lastWriteTimeStamp = -1;
   private static final int READ_MAX_BUFFER_SIZE = 1024 * 1024 * 4;
   private ByteBuffer offsetWriteBuffer = ByteBuffer.allocate(8);
-  private ByteBuffer dataReadBuffer = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
-  private ByteBuffer dataReadBufferBackup = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
+  private ByteBuffer dataReadBuffer = null;
+  private ByteBuffer dataReadBufferBackup = null;
   private int dispatchPosition = 0;
   private volatile SocketChannel socketChannel = null;
   private Selector selector = null;
@@ -242,6 +242,15 @@ public class HAClient implements Runnable {
     return true;
   }
 
+  private void byteBufferInitial() {
+    if (dataReadBuffer == null) {
+      dataReadBuffer = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
+    }
+    if (dataReadBufferBackup == null) {
+      dataReadBufferBackup = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
+    }
+  }
+
   private boolean connectMaster() throws ClosedChannelException {
     if (socketChannel == null) {
       if (this.masterPiperDataAddr == null) {
@@ -254,6 +263,7 @@ public class HAClient implements Runnable {
               masterPiperDataAddr.getPort() == this.piperConfig.masterSyncPort()) {
         return false;
       }
+      byteBufferInitial();
       String masterAddr = masterPiperDataAddr.getHostText() + ":" + masterPiperDataAddr.getPort();
 
       if (masterAddr != null) {

@@ -3,6 +3,7 @@ package com.dianwoda.usercenter.vera.piper.client;
 
 import com.dianwoda.usercenter.vera.common.ThreadFactoryImpl;
 import com.dianwoda.usercenter.vera.piper.data.DelayedElement;
+import com.dianwoda.usercenter.vera.piper.redis.command.CommandType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,11 @@ public class DefaultCircleDisposeHandler<RedisCommand> implements CircleDisposeH
 
   @Override
   public boolean isCycleData(RedisCommand data) {
+    com.dianwoda.usercenter.vera.common.redis.command.RedisCommand  command = (com.dianwoda.usercenter.vera.common.redis.command.RedisCommand)data;
+    if (command.getType() == CommandType.INCR.getValue() || command.getType() == CommandType.DECR.getValue()) {
+      return false;
+    }
+
     if (commandSet.contains(data)) {
       return true;
     }

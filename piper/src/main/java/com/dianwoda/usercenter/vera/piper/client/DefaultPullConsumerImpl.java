@@ -29,7 +29,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Flow control interval
    */
-  private static final long PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL = 200;
+  private static final long PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL = 1000;
   /**
    * WAIT FOR TIMEOUT
    */
@@ -41,7 +41,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Concurrently max span offset.it has no effect on sequential consumption
    */
-  public static int consumeConcurrentlyMaxSpan = 20000;
+  public static int consumeConcurrentlyMaxSpan = 200000;
   /**
    * Batch pull size
    */
@@ -62,7 +62,7 @@ public class DefaultPullConsumerImpl {
   /**
    * Batch consumption size
    */
-  private int consumeMessageBatchMaxSize = 3;
+  private int consumeMessageBatchMaxSize = 5;
   /**
    * Max consume times
    */

@@ -1,9 +1,11 @@
 package com.dianwoda.usercenter.vera.common.redis.command;
 
+import com.google.common.base.Utf8;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +25,7 @@ public class RedisCommand implements Serializable {
   /**
    * 类型
    */
-  private byte type;
+  private byte type = 0;
 
   /**
    * redis 命令 key
@@ -155,9 +157,10 @@ public class RedisCommand implements Serializable {
 
   @Override
   public String toString() {
+    String value = (this.value == null || this.value.length == 0) ? "null" :
+            new String(this.value, Charset.forName("utf8")).substring(0, Math.min(this.value.length, 50));
     return "type:" + this.type + " key:" + (this.key == null ? "null" : new String(this.key)) +
-            " value:" + (this.value == null ? "null" :
-            new String(this.value).substring(0, Math.min(this.value.length, 100)));
+            " value:" + value;
   }
 
 }

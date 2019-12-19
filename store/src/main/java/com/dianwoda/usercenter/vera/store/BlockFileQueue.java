@@ -78,7 +78,6 @@ public class BlockFileQueue  {
     long firstOffset = firstBlockFile.getFileFromOffset();
     if (offset <firstOffset) {
       log.error("Error can't find block file using offset: " + offset);
-      return null;
     }
     try {
       int index = (int)(offset/this.blockFileSize - firstOffset/this.blockFileSize);
@@ -91,7 +90,7 @@ public class BlockFileQueue  {
       if (returnFirstNotFound) {
         return firstBlockFile;
       }
-      log.error("find block file by offset: " + offset + " failture, blockFiles:" + blockFiles, e);
+      log.warn("find block file by offset: " + offset + " failture, blockFiles:" + blockFiles, e);
     }
     return null;
   }
@@ -262,7 +261,7 @@ public class BlockFileQueue  {
       int deleteCount = 0;
       long timeStamp = SystemClock.now();
       for (BlockFile blockFile : blockFiles) {
-
+        log.info("deleteExpiredFileByTime function starting process file:" + blockFile.getFileName());
         if (timeStamp - blockFile.getFile().lastModified() >= expiredTime) {
           log.info(blockFile.getFileName() + " last modified timestamp:" + UtilAll.timeMillisToHumanString2(blockFile.getFile().lastModified()) + " expired");
           blockFile.destroy(intervalForcibly);
@@ -285,12 +284,31 @@ public class BlockFileQueue  {
   }
 
   private void clearFileStructure(List<BlockFile> deleteFiles) {
-    Iterator<BlockFile> iter = this.blockFiles.iterator();
+    if (deleteFiles.isEmpty()) {
+      return;
+    }
+
+    Iterator<BlockFile> iter = deleteFiles.iterator();
     while (iter.hasNext()) {
       BlockFile blockFile = iter.next();
-      if (deleteFiles.contains(blockFile)) {
+      if (!this.blockFiles.contains(blockFile)) {
         iter.remove();
       }
+    }
+
+    if (deleteFiles.isEmpty()) {
+      return;
+    }
+    deleteFiles.stream().forEach(file -> {
+      log.info("blockFile name " + file.getFileName() + " will be deleted!");
+    });
+
+    try {
+      if (!this.blockFiles.removeAll(deleteFiles)) {
+        log.error("clearFileStructure remove failed");
+      }
+    } catch (Exception e) {
+      log.error("clearFileStructure delete files error", e);
     }
   }
 

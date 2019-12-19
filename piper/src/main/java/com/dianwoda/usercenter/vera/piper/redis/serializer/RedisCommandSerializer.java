@@ -72,18 +72,18 @@ public class RedisCommandSerializer implements ObjectSerializer<RedisCommand> {
         ByteBuffer byteBuffer = ByteBuffer.allocate(capacity);
         byteBuffer.put(type);
         byteBuffer.putInt(keyLen);
-        if(bytes != null){
+        if(bytes != null && bytes.length > 0){
             byteBuffer.put(bytes);
         }
         byteBuffer.putLong(commandSword.getIndex());
 
         byteBuffer.putInt(fieldLen);
-        if(field != null){
+        if(field != null && field.length > 0){
             byteBuffer.put(field);
         }
 
         byteBuffer.putInt(fieldsLen);
-        if(fields != null){
+        if(fields != null && fields.size() > 0){
             for(byte[] k : fields.keySet()){
                 byteBuffer.putInt(k.length);
                 byteBuffer.put(k);
@@ -93,12 +93,12 @@ public class RedisCommandSerializer implements ObjectSerializer<RedisCommand> {
         }
 
         byteBuffer.putInt(valueLen);
-        if(valueBytes != null){
+        if(valueBytes != null && valueBytes.length > 0){
             byteBuffer.put(valueBytes);
         }
 
         byteBuffer.putInt(memeLen);
-        if(memebers != null){
+        if(memebers != null && memebers.length > 0){
             for(int i = 0; i < memeLen; i++){
                 byteBuffer.putInt(memebers[i].length);
                 byteBuffer.put(memebers[i]);

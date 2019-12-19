@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DefaultCommandStore implements CommandStore {
   protected static final Logger log = LoggerFactory.getLogger(DefaultCommandStore.class);
-  public static int MAX_SIZE = 1024 * 1024 * 4;
+  public static int MAX_SIZE = 1024 * 1024 * 1;
   public static int blockFileSize = 1024 * 1024 * 200; // 200M
   // Resource reclaim interval
   public static int cleanResourceInterval = 10000;
@@ -50,7 +50,7 @@ public class DefaultCommandStore implements CommandStore {
   private PiperStatsManager piperStatsManager;
   private CommandArrivingListener commandArrivingListener;
   private final ScheduledExecutorService scheduledExecutorService =
-          Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("StoreScheduledThread_"));
+          Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("CleanScheduledThread_"));
 
   public DefaultCommandStore(String storePath, PiperStatsManager piperStatsManager,
                              CommandArrivingListener commandArrivingListener) {
@@ -268,6 +268,11 @@ public class DefaultCommandStore implements CommandStore {
     if (blockFile == null) {
       log.error("create block file error, data: {}", data);
       return new PutCommandResult(PutCommandStatus.CREATE_BLOCKFILE_FAILED, null);
+    }
+
+    if (data.length >= MAX_SIZE - CommandDecoder.BODY_SIZE_POSITION) {
+      log.error("data size too big, size:" + data.length);
+      return new PutCommandResult(PutCommandStatus.SIZE_BEYOND_ERROR, null);
     }
     return this.appendCommand(blockFile, data);
   }
@@ -613,13 +618,16 @@ public class DefaultCommandStore implements CommandStore {
       boolean isSpaceMeet = this.isSpaceMeet();
 
       if (isTimeMeet || isSpaceMeet) {
+        try {
+          log.info(String.format("begin to delete before %d hours file. timeup: %s spacefull: %s",
+                  reserveTime / 1000 / 60 / 60, isTimeMeet, isSpaceMeet));
 
-        log.info(String.format("begin to delete before %d hours file. timeup: %s spacefull: %s",
-                reserveTime / 1000 / 60 / 60, isTimeMeet, isSpaceMeet));
-
-        int deleteCount = DefaultCommandStore.this.blockFileQueue.deleteExpiredFileByTime(reserveTime,
-                deleteFilesInterval, intervalForcibly);
-        log.info("ClearStoreFileService run clean file deleteCount:" + deleteCount);
+          int deleteCount = DefaultCommandStore.this.blockFileQueue.deleteExpiredFileByTime(reserveTime,
+                  deleteFilesInterval, intervalForcibly);
+          log.info("ClearStoreFileService run clean file deleteCount:" + deleteCount);
+        } catch (Exception e) {
+          log.error("ClearStoreFileService start cleaning files error", e);
+        }
       }
 
     }

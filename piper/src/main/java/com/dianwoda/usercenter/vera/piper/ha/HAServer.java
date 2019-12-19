@@ -77,7 +77,7 @@ public class HAServer implements Runnable{
 
               HAConnection connection = new HAConnection(this, sc);
               connection.start();
-              this.connectionList.add(connection);
+              this.addConnection(connection);
             }
           }
         }
@@ -101,6 +101,12 @@ public class HAServer implements Runnable{
   public void destory() {
     this.setStop(true);
     this.executorService.shutdownNow();
+  }
+
+  public void addConnection(HAConnection connection) {
+    synchronized (this.connectionList) {
+      this.connectionList.add(connection);
+    }
   }
 
   public void removeConnection(HAConnection connection) {
