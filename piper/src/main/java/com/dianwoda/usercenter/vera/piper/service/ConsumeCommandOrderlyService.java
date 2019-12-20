@@ -84,7 +84,7 @@ public class ConsumeCommandOrderlyService {
               if (!processResult) {
                 log.warn("process command consume result, ConsumeOrderlyStatus:" + status + ", processResult:" + processResult);
               } else {
-                log.info("process command consu/cme result, ConsumeOrderlyStatus:" + status + ", processResult:" + processResult);
+                log.info("process command consume result, ConsumeOrderlyStatus:" + status + ", processResult:" + processResult);
               }
               long consumeRT = SystemClock.now() - beginTimestamp;
               ConsumeCommandOrderlyService.this.getConsumerStatsManager().incConsumeRT(

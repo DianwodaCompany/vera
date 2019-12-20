@@ -315,7 +315,7 @@ public class HAConnection {
               break;
             }
           } else {
-            log.error("readDataProcess error happend, maybe connection closed!");
+            log.warn("readDataProcess error happend, maybe connection closed!");
             return false;
           }
         } catch (IOException e) {

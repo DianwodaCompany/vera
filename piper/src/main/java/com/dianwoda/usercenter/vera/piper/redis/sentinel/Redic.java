@@ -89,8 +89,10 @@ public class Redic extends Jedis {
           break;
         case SET_EX:
           this.setex(command.getKey(), Long.valueOf(command.getExpiredValue()).intValue(), command.getValue());
+          break;
         case SET_NX:
           this.setnx(command.getKey(), command.getValue());
+          break;
         case INCR:
           this.incr(command.getKey());
           break;
@@ -113,7 +115,7 @@ public class Redic extends Jedis {
           break;
       }
     } catch (Throwable e) {
-      log.error("write error, key:" + command.getKey());
+      log.warn("write error, key:" + new String(command.getKey()));
       throw e;
     }
   }
