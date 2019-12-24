@@ -131,7 +131,7 @@ public class HAClient implements Runnable {
             break;
           }
         } else {
-          log.error("HAClient read event socket < 0");
+          log.warn("HAClient read event socket < 0");
           return false;
         }
 

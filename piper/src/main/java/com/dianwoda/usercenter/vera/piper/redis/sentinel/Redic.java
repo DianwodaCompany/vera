@@ -331,6 +331,22 @@ public class Redic extends Jedis {
     return ret;
   }
 
+  @Override
+  public byte[] hget(byte[] key, byte[] field) {
+    Jedis jedis = null;
+    byte[] ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.hget(key, field);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
+    return ret;
+  }
 
   @Override
   public String hmset(byte[] key, Map<byte[], byte[]> hash) {

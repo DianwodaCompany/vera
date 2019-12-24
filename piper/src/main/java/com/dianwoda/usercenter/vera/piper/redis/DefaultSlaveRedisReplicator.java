@@ -102,6 +102,11 @@ public class DefaultSlaveRedisReplicator {
     public void onEvent(Replicator replicator, Event event) {
       if (event instanceof Command) {
         Command command = (Command) event;
+        // just for test
+//        RedisConfigure redisConfigure = new RedisConfigure();
+//        JdkSerializationRedisSerializer valueSerializer = new JdkSerializationRedisSerializer();
+//        HSetCommand hSetCommand = (HSetCommand) command;
+//        Object obj = valueSerializer.deserialize(((HSetCommand) command).getValue());
         RedisCommand redisCommand = RedisCommandBuilder.buildSwordCommand(command);
         if (redisCommand.getType() == 0
                 || (redisCommand = commandInterceptor.interceptor(redisCommand)) == null) {
