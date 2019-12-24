@@ -23,11 +23,13 @@ import java.util.List;
 public class RedisConfigure {
 
   public static CacheManager cacheManager;
-  String masterName = "mymaster";
-  String sentinels = "127.0.0.1:26379";
-  String password = "foobared";
+  static String masterName = "mymaster";
+  static String sentinels = "127.0.0.1:26379";
+  static String password = "foobared";
 
   public RedisConfigure() {
+  }
+  static {
     JedisPoolConfig poolConfig = new JedisPoolConfig();
 
     RedisSentinelConfiguration config = new RedisSentinelConfiguration();
@@ -40,14 +42,14 @@ public class RedisConfigure {
 
   }
 
-  protected final JedisConnectionFactory applyProperties(
+  static protected final JedisConnectionFactory applyProperties(
           JedisConnectionFactory factory) {
     factory.setPassword(password);
     return factory;
   }
 
 
-  private RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+  static private RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
     RedisTemplate<String, Object> template = new RedisTemplate<>();
     template.setConnectionFactory(factory);
     template.setKeySerializer(new StringRedisSerializer());
@@ -59,7 +61,7 @@ public class RedisConfigure {
   }
 
 
-  private List<RedisNode> createSentinels(String sentinels) {
+  static private List<RedisNode> createSentinels(String sentinels) {
     List<RedisNode> nodes = new ArrayList<RedisNode>();
     for (String node : StringUtils
             .commaDelimitedListToStringArray(sentinels)) {

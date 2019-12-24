@@ -12,15 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/test")
 public class TestController {
-  RedisConfigure redisConfigure = new RedisConfigure();
-
 
   @RequestMapping("/hset2")
   @ResponseBody
   public Object hset2(@RequestParam(name="hash") String hash,
                      @RequestParam(name="key") String key,
                      @RequestParam(name="value") String value) {
-
+    RedisConfigure redisConfigure = new RedisConfigure();
     Object obj = null;
     if (value == null || value == "") {
       obj = System.currentTimeMillis();
@@ -37,7 +35,7 @@ public class TestController {
   @ResponseBody
   public Object hget2(@RequestParam(name="hash") String hash,
                      @RequestParam(name="key") String key) {
-
+    RedisConfigure redisConfigure = new RedisConfigure();
     Object obj = RedisConfigure.cacheManager.hashGet(hash, key);
     return obj;
   }
