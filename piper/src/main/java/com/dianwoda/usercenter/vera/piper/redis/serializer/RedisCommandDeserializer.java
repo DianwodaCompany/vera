@@ -2,6 +2,7 @@ package com.dianwoda.usercenter.vera.piper.redis.serializer;
 
 
 import com.dianwoda.usercenter.vera.common.redis.command.RedisCommand;
+import com.dianwoda.usercenter.vera.piper.redis.command.CommandType;
 import com.dianwoda.usercenter.vera.store.io.ObjectDeserializer;
 
 import java.nio.ByteBuffer;
@@ -32,6 +33,21 @@ public class RedisCommandDeserializer implements ObjectDeserializer<RedisCommand
       byte[] keyBytes = new byte[keyLen];
       byteBuffer.get(keyBytes);
       swordCommand.setKey(keyBytes);
+    }
+
+    // add del command support
+    if (type == CommandType.DEL.getValue()) {
+      int delKeyLen = byteBuffer.getInt();
+      byte[][] delKeys = new byte[delKeyLen][];
+      if (delKeyLen > 0) {
+        for (int i = 0; i < delKeyLen; i++) {
+          int delKeyValueLen = byteBuffer.getInt();
+          byte[] delKeyValue = new byte[delKeyValueLen];
+          byteBuffer.get(delKeyValue);
+          delKeys[i] = delKeyValue;
+        }
+      }
+      swordCommand.setDelKeys(delKeys);
     }
 
     swordCommand.setIndex(byteBuffer.getLong());

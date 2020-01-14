@@ -3,6 +3,8 @@ package com.dianwoda.usercenter.vera.common.redis.command;
 import com.google.common.base.Utf8;
 import lombok.Data;
 import lombok.ToString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -19,7 +21,7 @@ import java.util.Objects;
 @Data
 @ToString
 public class RedisCommand implements Serializable {
-
+  protected static final Logger log = LoggerFactory.getLogger(RedisCommand.class);
   public static final RedisCommand DELETE_COMMAND = new RedisCommand();
 
   /**
@@ -32,6 +34,7 @@ public class RedisCommand implements Serializable {
    */
   private byte[] key;
 
+  private byte[][] delKeys;
   /**
    * LSET
    */
@@ -155,12 +158,30 @@ public class RedisCommand implements Serializable {
       this.expiredType = expiredType;
   }
 
+  public byte[][] getDelKeys() {
+    return delKeys;
+  }
+
+  public void setDelKeys(byte[][] delKeys) {
+    this.delKeys = delKeys;
+  }
+
   @Override
   public String toString() {
-    String value = (this.value == null || this.value.length == 0) ? "null" :
-            new String(this.value, Charset.forName("utf8")).substring(0, Math.min(this.value.length, 50));
+    String value = null;
+    try {
+      value = (this.value == null || this.value.length == 0) ? "null" :
+              new String(this.value, Charset.forName("utf8")).substring(0, Math.min(this.value.length/3, 50));
+    } catch (Exception e) {
+      log.error("str:" + new String(this.value));
+
+      for (int i=0; i<this.value.length; i++) {
+        log.error("i:" + this.value[i]);
+      }
+      value = new String(this.value);
+    }
     return "type:" + this.type + " key:" + (this.key == null ? "null" : new String(this.key)) +
-            " value:" + value;
+            " value:" + value + " delkeys:" + (this.delKeys == null ? "null" : new String(this.delKeys[0]));
   }
 
 }

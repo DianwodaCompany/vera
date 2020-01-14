@@ -61,7 +61,6 @@ public class ConsumeCommandOrderlyService {
 
     @Override
     public void run() {
-      int i=0, j=0, m=0, n=0;
       try {
         processQueue.getConsumeLock().lockInterruptibly();
         for (boolean continueConsume = true; continueConsume; ) {
@@ -75,12 +74,9 @@ public class ConsumeCommandOrderlyService {
 
             if (!commands.isEmpty()) {
               long beginTimestamp = SystemClock.now();
-              i++;
               ConsumeOrderlyStatus status = ConsumeCommandOrderlyService.this.commandListener.consumer(processQueue.getSyncPiperLocation(), commands);
-              j++;
               log.info("process command consume result, ConsumeOrderlyStatus:" + status);
               boolean processResult = processCommandsResult(status, commands, processQueue);
-              m++;
               if (!processResult) {
                 log.warn("process command consume result, ConsumeOrderlyStatus:" + status + ", processResult:" + processResult);
               } else {
@@ -89,7 +85,6 @@ public class ConsumeCommandOrderlyService {
               long consumeRT = SystemClock.now() - beginTimestamp;
               ConsumeCommandOrderlyService.this.getConsumerStatsManager().incConsumeRT(
                       processQueue.getSyncPiperLocation(), consumeRT);
-              n++;
             } else {
               log.info("commands is empty, size:" + this.processQueue.getTreeSize());
               break;
@@ -105,8 +100,7 @@ public class ConsumeCommandOrderlyService {
         processQueue.getConsumeLock().unlock();
         log.info("processQueue process over, but queue size: " + this.processQueue.getMsgCount() +
                 ", temp tree size:" + this.processQueue.getTempTreeSize() +
-                ", tree size:" + this.processQueue.getTreeSize() +
-                ", i=" + i + ", j=" + j + ", m=" + m + ", n=" + n);
+                ", tree size:" + this.processQueue.getTreeSize());
       }
     }
   }

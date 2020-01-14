@@ -109,7 +109,10 @@ public class Redic extends Jedis {
           this.hmset(command.getKey(), command.getFields());
           break;
         case LSET:
-          this.lset(new String(command.getKey()), command.getIndex(), new String(command.getValue()));
+          this.lset(command.getKey(), command.getIndex(), command.getValue());
+          break;
+        case DEL:
+          this.del(command.getDelKeys());
           break;
         default:
           break;
@@ -147,24 +150,6 @@ public class Redic extends Jedis {
         jedis.close();
       }
     }
-  }
-
-  @Override
-  public String set(String key, String value, String nxxx, String expx,
-                    long time) {
-    Jedis jedis = null;
-    String ret = null;
-    try {
-      jedis = getWrite(key);
-      ret = jedis.set(key, value, nxxx, expx, time);
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      if (jedis != null) {
-        jedis.close();
-      }
-    }
-    return ret;
   }
 
   @Override
@@ -366,7 +351,7 @@ public class Redic extends Jedis {
   }
 
   @Override
-  public String lset(String key, long index, String value) {
+  public String lset(final byte[] key, final long index, final byte[] value) {
     Jedis jedis = null;
     String ret = null;
     try {
@@ -399,6 +384,22 @@ public class Redic extends Jedis {
     return ret;
   }
 
+  @Override
+  public Long del(byte[]... key) {
+    Jedis jedis = null;
+    Long ret = null;
+    try {
+      jedis = getWrite(key);
+      ret = jedis.del(key);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
+    return ret;
+  }
 
   @Override
   public void close() {
@@ -428,7 +429,7 @@ public class Redic extends Jedis {
   }
 
 
-  public static void main(String args[]) throws InterruptedException{
+  public static void main(String args[]) throws Exception {
 
     Map map =  new HashMap();
     map.put("master", "mymaster");
@@ -439,9 +440,8 @@ public class Redic extends Jedis {
     map.put("sentinels", sentinels);
     List<Map> redisClients = new ArrayList();
     redisClients.add(map);
-    Redic redic = new Redic(redisClients, "foobared");
-    redic.init();
-    redic.set("test", "test_value");
+    Redic redic = new Redic("mymaster", sentinels, "foobared");
+    redic.saveValueByKey("test".getBytes(), "test_value".getBytes(), 0);
     System.out.println(redic.get("test"));
 
     redic.del("test".getBytes());

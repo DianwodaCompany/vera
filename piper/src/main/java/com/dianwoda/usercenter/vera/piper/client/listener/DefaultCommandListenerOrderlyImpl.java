@@ -31,6 +31,7 @@ public class DefaultCommandListenerOrderlyImpl implements CommandListenerOrderly
     if (commands == null || commands.isEmpty()) {
       return ConsumeOrderlyStatus.SUSPEND;
     }
+    // just for debug
     int i = 0, j = 0, k = 0, m = 0, n = 0, l = 0;
     try {
       for (CommandExt command : commands) {

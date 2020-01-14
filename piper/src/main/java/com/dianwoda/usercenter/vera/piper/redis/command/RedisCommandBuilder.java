@@ -73,6 +73,10 @@ public class RedisCommandBuilder {
       swordCommand.setKey(lSetCommand.getKey());
       swordCommand.setIndex(lSetCommand.getIndex());
       swordCommand.setValue(lSetCommand.getValue());
+    } else if (command instanceof DelCommand) {
+      DelCommand delCommand = (DelCommand) command;
+      swordCommand.setType(CommandType.DEL.getValue());
+      swordCommand.setDelKeys(delCommand.getKeys());
     }
     return swordCommand;
   }
