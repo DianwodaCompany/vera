@@ -27,8 +27,8 @@ vera
 
 
 <a name="vera-解决什么问题"></a>
-# Vera 解决什么问题
-Redis 在点我达内部得到了广泛的使用，根据运维数据统计，整个点我达全部Redis Master的读写请求在每秒60W+，其中不包括Slave的读请求，很多业务甚至会将Redis当成内存数据库使用。这样，就对Redis多数据中心提出了很大的需求，一是为了提升可用性，解决数据中心 DR(Disaster Recovery) 问题，二是公司业务实现异地多活，不同机房有自己的数据中心，每个数据中心仅读写当前数据中心的数据，但各数据中心的Redis数据需要同步，允许存在一定的延时。在这样的需求下，Vera应运而生, 一定程度上，Vera实现了Redis Cluster的多主数据同步。  
+# Vera解决什么问题
+Redis在点我达内部得到了广泛的使用，根据运维数据统计，整个点我达全部Redis Master的读写请求在每秒60W+，其中不包括Slave的读请求，很多业务甚至会将Redis当成内存数据库使用。这样，就对Redis多数据中心提出了很大的需求，一是为了提升可用性，解决数据中心 DR(Disaster Recovery) 问题，二是公司业务实现异地多活，不同机房有自己的数据中心，每个数据中心仅读写当前数据中心的数据，但各数据中心的Redis数据需要同步，允许存在一定的延时。在这样的需求下，Vera应运而生, 一定程度上，Vera实现了Redis Cluster的多主数据同步。  
 
 为了方便描述，后面用 DC 代表数据中心 (Data Center)。
 
@@ -39,16 +39,17 @@ Redis 在点我达内部得到了广泛的使用，根据运维数据统计，�
 整体架构图如下所示：  
 ![design](https://raw.github.com/DianwodaCompany/vera/master/doc/image/total.jpg)  
 
--  Console：用来提供用户界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
--  NamerServer：各Piper信息与各任务执行情况的集中维护，主要是通过Piper的心跳上报；
+-  Console：用来提供后台用户操控界面，供用户进行Redis集群侦听配置和各Piper实例的同步配置。
+-  NamerServer：各Piper信息与各任务执行情况的集中查看及维护，主要是通过Piper的心跳上报；
 -  Piper:Vera中最主要的结点，主要功能如下：
 - - Redis命令存储：通过侦听RedisCluster中master结点产生的Redis命令存储到本地文件；
-- - 同步其它Piper的数据并写入本地Redis Master中；所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要同步该RedisMaster的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis Cluster;
+- - 同步其它Piper的数据并写入本地Redis Master中；所以Piper有两种角色，一种是数据产生者，侦听Redis Master并获取新数据，提供给其它需要获取该RedisMaster数据的Piper, 第二种是数据消费者，同步其它Piper的数据并消费该数据，即写入Redis Cluster;
 
 <a name="redis-多主数据同步问题"></a>
 ## Redis 多主数据同步问题
-多数据中心首先要解决的是数据同步问题，即数据如何从一个 DC 传输到另外一个 DC。我们决定采用伪 slave 的方案，即实现 Redis 协议，伪装成为 Redis slave，让 Redis master 推送数据至伪 slave。这个伪 slave的功能是在piper中实现，考虑到目前绝大多数公司都是采用Redis Sentinel架构来搭建Redis集群，所以Vera通过传入Sentinel集群和Redis Master名字来自动获取Redis Master的IP和端口，从而实现数据侦听功能，如下图所示：  
+多数据中心首先要解决的是数据同步问题，即数据如何从一个 DC 传输到另外一个 DC。针对Redis Cluster来说，我们决定采用伪 Redis slave的方案，即实现 Redis 协议，伪装成为 Redis slave，让 Redis master 推送数据至该伪 slave。这个伪 slave的功能是在piper中实现，考虑到目前绝大多数公司都是采用Redis Sentinel架构来搭建Redis集群，所以Vera通过传入Sentinel集群和Redis Master名字来自动获取Redis Master的IP和端口，从而实现连接及侦听功能，如下图所示：  
 ![pipers](https://raw.github.com/DianwodaCompany/vera/master/doc/image/pipers.jpg)  
+Piper接收redis command数据，写入本地的Blockfile, 其中Blockfile采用内存映射方式实现来提高写入速度，同时Blockfile会定时Flush到硬盘以持久化，Blockfile会记录writeOffset及commitOffset分别表示写入及刷新磁盘的位置。其它Piper通过上传自身的同步offset来同步获取增量数据。
 
 ### 使用 piper 带来的优势  
 - 减少 master 同步次数  
@@ -61,8 +62,8 @@ piper将Redis日志数据缓存到磁盘，这样，可以缓存大量的日志�
 多个机房之间的数据传输往往需要通过公网进行，这样数据的安全性变得极为重要，piper之间的数据传输也可以加密 (暂未实现)，提升安全性。
 
 ### piper增量同步
-piper之间的数据同步采用增量同步方式，假设piperA开始同步piperB的数据，有如下三种可以实现：
-- piperA仅同步piperB后面新进来的数据，忽略之前的历史数据；
+piper之间的数据同步采用增量同步方式，假设piperA开始同步piperB的数据，有如下三种方式可以实现：
+- piperA仅同步piperB后面新进来的数据，忽略之前的历史数据, 默认采用方式；
 - piperA取出保存在本地piperB的同步offset, 接着这个offset继续同步；这种方式存在一个问题：如果piperA之前很久未同步过piperB的数据，会导致会有很多历史数据同步过来，不推荐；
 - piperA取出保存在本地piperB的同步offset, 接着这个offset继续同步, 同时对同步过来的数据做处理，过滤一定时间间隔之外的数据；
 
@@ -89,6 +90,7 @@ Redis Master也可能会挂，Redis本身提供哨兵 (Sentinel) 机制保证集
 <a name="文件存储结构"></a>
 ## 文件存储结构
 文件存储结构如下：
+
 ![command](https://raw.github.com/DianwodaCompany/vera/master/doc/image/command.jpg)  
 piper侦听redis cluster，将接收到的命令同步写入BlockFile，每个BlockFile目前的大小为200M, 写满一个再生成一个新文件，源piper发起数据请求都会带上offset, 目的piper根据offset找到相应blockfile, 并且定位到offset位置读取相应redis命令数据，默认最多读取50条，同时返回下一次应该读取的nextOffset给调用方。其中piper读写blockfile的方式采用内存映射加定时flush硬盘的方式；
 
@@ -118,7 +120,8 @@ Thanks for all the people who contributed to Vera !
 # To do list
   * piper实现主备功能, 减少master piper挂掉对其它piper数据同步造成的影响； (已经在0.0.2版本中实现)
   * namer-server实现双主功能, 以防止单个namer挂掉造成影响  (已经在0.0.2版本中实现);
-  
+  * piper主从同步目前是piper slave自己发现master并自动发起同步的，后期可视情况是否放到后台可配；
+
 <a name="license"></a>
 # License
 The project is licensed under the [Apache 2 license](https://github.com/DianwodaCompany/vera/master/LICENSE).
