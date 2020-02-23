@@ -79,6 +79,7 @@ public class PiperController {
     if (result) {
       this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.clientHousekeepingService);
       RPCHook hook = new DefaultRPCHookImpl();
+      hook.start();
       this.remotingServer.registerRPCHook(hook);
       this.pullMessageExecutor = new ThreadPoolExecutor(
               16, 16, 1000 * 60, TimeUnit.MILLISECONDS,

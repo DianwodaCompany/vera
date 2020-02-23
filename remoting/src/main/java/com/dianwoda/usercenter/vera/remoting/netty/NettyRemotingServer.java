@@ -182,7 +182,9 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
       if (this.timer != null) {
         this.timer.cancel();
       }
-
+      if (this.rpcHook != null) {
+        this.rpcHook.stop();
+      }
       this.eventLoopGroupBoss.shutdownGracefully();
 
       this.eventLoopGroupSelector.shutdownGracefully();

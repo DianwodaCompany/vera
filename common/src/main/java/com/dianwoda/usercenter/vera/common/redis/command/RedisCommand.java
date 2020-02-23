@@ -171,7 +171,7 @@ public class RedisCommand implements Serializable {
     String value = null;
     try {
       value = (this.value == null || this.value.length == 0) ? "null" :
-              new String(this.value, Charset.forName("utf8")).substring(0, Math.min(this.value.length/3, 50));
+              new String(this.value).substring(0, Math.min(new String(this.value).length(), 50));
     } catch (Exception e) {
       log.error("str:" + new String(this.value));
 
