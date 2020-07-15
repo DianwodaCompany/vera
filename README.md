@@ -116,6 +116,8 @@ Thanks for all the people who contributed to Vera !
 <img class="avatar" src="https://avatars1.githubusercontent.com/u/54735957?s=460&v=4" width="48" height="48" alt="@gammabin">
 </a>
 
+联系我们：158488178@qq.com
+
 <a name="Todolist"></a>
 # To do list
   * piper实现主备功能, 减少master piper挂掉对其它piper数据同步造成的影响； (已经在0.0.2版本中实现)
